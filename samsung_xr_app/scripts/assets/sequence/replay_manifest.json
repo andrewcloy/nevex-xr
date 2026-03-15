@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "description": "Sample replay manifest for timing-aware camera-mode rehearsal.",
+  "entries": [
+    {
+      "leftFile": "left/frame_001.svg",
+      "rightFile": "right/frame_001.svg",
+      "timestampMs": 1000,
+      "frameId": 101,
+      "label": "Replay sample pair 1",
+      "notes": "First recorded sample frame."
+    },
+    {
+      "leftFile": "left/frame_002.svg",
+      "rightFile": "right/frame_002.svg",
+      "timestampMs": 1180,
+      "frameId": 102,
+      "label": "Replay sample pair 2",
+      "notes": "Second recorded sample frame.",
+      "delayUntilNextMs": 90
+    }
+  ]
+}

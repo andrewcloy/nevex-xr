@@ -1,0 +1,47 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors and local tooling
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+
+# Node / web
+**/node_modules/
+**/dist/
+**/.vite/
+**/coverage/
+*.tsbuildinfo
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.venv/
+venv/
+env/
+
+# Local runtime outputs and generated artifacts
+**/artifacts/
+**/output/
+**/outputs/
+*.log
+*.tmp
+*.pid
+
+# Jetson capture artifacts
+*.mkv
+*.mp4
+*.mov
+*.avi
+*.h264
+
+# Environment and secrets
+.env
+.env.*
+*.local
