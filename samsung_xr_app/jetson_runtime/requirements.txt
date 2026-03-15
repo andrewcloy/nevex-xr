@@ -1,2 +1,0 @@
-# No third-party Python packages are required for the first runtime pass.
-# This application uses the Python standard library plus the Jetson GStreamer stack.

@@ -44,28 +44,20 @@ NEVEX_XR/
 
 ## Important Consolidation Note
 
-The copied `samsung_xr_app/` folder still contains its own nested
-`jetson_runtime/` and `docs/` directories because the current XR sender tooling
-previously resolved the Jetson runtime relative to the XR app root.
-
-Path normalization is now in place for the copied XR sender defaults:
+Path normalization is now in place for XR sender defaults:
 
 - prefer top-level `NEVEX_XR/jetson_runtime/`
-- fall back to `NEVEX_XR/samsung_xr_app/jetson_runtime/` if the top-level
-  sibling is unavailable
+- fall back to a nested XR-local copy only if one is present
 
 The intended canonical shared locations are now:
 
 - `NEVEX_XR/jetson_runtime/`
 - `NEVEX_XR/docs/`
 
-That means this master folder is safe and complete today, but there is still one
-follow-up cleanup step before the top-level root becomes the only canonical
-working layout:
+The temporary nested compatibility copies under `samsung_xr_app/` have now been
+removed. The top-level root is the canonical project layout going forward.
 
-1. Validate the sender bridge and Jetson control/preview flows from the unified
-   root.
-2. Remove duplicate nested copies from `samsung_xr_app/` only after validation.
+What remains is normal validation and Git workflow only, not layout cleanup.
 
 ## Recommended Use Going Forward
 
@@ -79,8 +71,8 @@ For the future unified repository root:
 - treat `NEVEX_XR/` as the intended GitHub root
 - use top-level `docs/` and top-level `jetson_runtime/` as the future canonical
   shared locations
-- keep nested copies only as temporary compatibility backups until validation is
-  complete
+- keep XR app work under `NEVEX_XR/samsung_xr_app/`
+- keep shared runtime and shared docs at the top level
 
 ## Original Safety Net
 
@@ -91,5 +83,5 @@ The original source project remains untouched at:
 ## Suggested Next Administrative Step
 
 When you are ready to make this the repository root, initialize Git from
-`C:\Users\andre\Desktop\NEVEX_XR` and review the duplication note in
-`docs/repository_consolidation_note.md` before deleting any nested copies.
+`C:\Users\andre\Desktop\NEVEX_XR` and review the repository note in
+`docs/repository_consolidation_note.md`.

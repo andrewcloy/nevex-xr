@@ -1,8 +1,8 @@
 # Repository Consolidation Note
 
-This note explains the current safe-copy layout inside `NEVEX_XR/`.
+This note explains the current canonical repository layout inside `NEVEX_XR/`.
 
-## Why The Layout Is Transitional
+## Current Canonical Layout
 
 The original working project root was:
 
@@ -15,40 +15,35 @@ That root already contained:
 - `docs/`
 
 Some XR sender/runtime defaults previously resolved the Jetson runtime relative
-to the XR app root. Because the consolidation step needed to stay low risk, the
-copied `samsung_xr_app/` folder was kept as a self-contained snapshot first.
+to the XR app root. That path normalization is now complete.
 
-That path normalization is now in place for the copied XR sender defaults:
+Current XR sender path behavior:
 
 - prefer `NEVEX_XR/jetson_runtime/`
-- fall back to `NEVEX_XR/samsung_xr_app/jetson_runtime/`
+- fall back to an XR-local nested copy only if one exists
 
 The intended canonical shared folders are now:
 
 - `NEVEX_XR/jetson_runtime/`
 - `NEVEX_XR/docs/`
 
-## What Was Copied
+The temporary nested compatibility copies under `samsung_xr_app/` have been
+removed after validation.
 
-- full current working tree copied to `NEVEX_XR/samsung_xr_app/`
-- `jetson_runtime/` also copied to `NEVEX_XR/jetson_runtime/`
-- `docs/` also copied to `NEVEX_XR/docs/`
+## Current Structure Intent
 
-This means there are intentional duplicate copies right now:
+- `NEVEX_XR/samsung_xr_app/` is the XR application root
+- `NEVEX_XR/jetson_runtime/` is the canonical shared Jetson runtime
+- `NEVEX_XR/docs/` is the canonical shared documentation root
 
-- `NEVEX_XR/jetson_runtime/`
-- `NEVEX_XR/samsung_xr_app/jetson_runtime/`
-- `NEVEX_XR/docs/`
-- `NEVEX_XR/samsung_xr_app/docs/`
-
-## Why This Was The Safest Choice
+## Why This Is Now Safe
 
 - originals remain untouched
-- the copied XR app remains runnable with its current path assumptions
+- the XR app now resolves the top-level sibling runtime by default
 - the unified root is already prepared for future GitHub use
-- cleanup can happen later with lower risk
+- duplicate nested trees are no longer required for normal operation
 
-## Recommended Cleanup Before Final Canonical Git Layout
+## Remaining Validation Focus
 
 1. Validate:
    - control-plane bridge
@@ -56,15 +51,11 @@ This means there are intentional duplicate copies right now:
    - sender path resolution
    - docs references that assume the old root
 2. Keep the top-level `jetson_runtime/` and `docs/` as canonical.
-3. Remove duplicate nested copies from `samsung_xr_app/` only after validation.
 
 ## Immediate Working Recommendation
 
-If you want zero layout risk right now, open and use:
+Open and use:
 
 `NEVEX_XR/samsung_xr_app`
 
-If you want to finish repository-root normalization next, do that as a focused
-follow-up pass from:
-
-`NEVEX_XR`
+Treat `NEVEX_XR/` as the Git repository root.
