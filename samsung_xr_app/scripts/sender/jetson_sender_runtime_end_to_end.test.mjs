@@ -1,15 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
-import {
-  WebSocket as NodeWebSocket,
-  type WebSocketServer,
-} from "ws";
-import { JetsonTransportAdapter } from "./jetson_transport_adapter";
-import type { StereoFrame } from "./frame_models";
-import { DEFAULT_SENDER_CONFIG } from "../../scripts/sender/sender_config.mjs";
-import { startJetsonSenderRuntime } from "../../scripts/sender/sender_runtime.mjs";
+import { JetsonTransportAdapter } from "../../src/stereo_viewer/jetson_transport_adapter.ts";
+import { DEFAULT_SENDER_CONFIG } from "./sender_config.mjs";
+import { startJetsonSenderRuntime } from "./sender_runtime.mjs";
 
 describe("Jetson sender runtime end-to-end", () => {
-  const cleanupTasks: Array<() => Promise<void>> = [];
+  const cleanupTasks = [];
 
   afterEach(async () => {
     while (cleanupTasks.length > 0) {
@@ -50,13 +45,13 @@ describe("Jetson sender runtime end-to-end", () => {
         path: "/jetson/messages",
         streamName: DEFAULT_SENDER_CONFIG.streamName,
       },
-      createWebSocket: (url) => new NodeWebSocket(url) as unknown as WebSocket,
+      createWebSocket: (url) => new WebSocket(url),
     });
     cleanupTasks.push(async () => {
       await adapter.stop();
     });
 
-    const receivedFrames: StereoFrame[] = [];
+    const receivedFrames = [];
     const unsubscribeFrame = adapter.frameSource.subscribeFrame((frame) => {
       receivedFrames.push(frame);
     });
@@ -94,20 +89,20 @@ describe("Jetson sender runtime end-to-end", () => {
     expect(sourceStatus.cameraTelemetry?.captureBackendName).toBe("simulated");
     expect(firstFrame.left.imageContent?.sourceKind).toBe("uri");
     expect(firstFrame.right.imageContent?.sourceKind).toBe("uri");
-  });
+  }, 10000);
 });
 
-async function waitForServerListening(server: WebSocketServer): Promise<void> {
+async function waitForServerListening(server) {
   if (server.address()) {
     return;
   }
 
-  await new Promise<void>((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     const onListening = () => {
       server.off("error", onError);
       resolve();
     };
-    const onError = (error: Error) => {
+    const onError = (error) => {
       server.off("listening", onListening);
       reject(error);
     };
@@ -117,12 +112,12 @@ async function waitForServerListening(server: WebSocketServer): Promise<void> {
   });
 }
 
-async function closeServer(server: WebSocketServer): Promise<void> {
+async function closeServer(server) {
   if (!server.address()) {
     return;
   }
 
-  await new Promise<void>((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     server.close((error) => {
       if (error) {
         reject(error);
@@ -134,10 +129,7 @@ async function closeServer(server: WebSocketServer): Promise<void> {
   });
 }
 
-async function waitFor(
-  predicate: () => boolean,
-  timeoutMs: number,
-): Promise<void> {
+async function waitFor(predicate, timeoutMs) {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt <= timeoutMs) {

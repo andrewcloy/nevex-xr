@@ -8,6 +8,9 @@ The canonical sender entry is now `npm run sender:runtime -- ...` or
 examples remain valid as compatibility aliases, but new validation flows should
 prefer the runtime entry name.
 
+For the shortest end-to-end Jetson sender plus XR receiver bring-up flow, use
+`docs/jetson_first_live_bringup.md`.
+
 Before Jetson hardware is ready, you can rehearse the same camera provider path
 locally with `--capture-backend simulated` or `--capture-backend replay`. Both
 paths are cross-platform and do not require Linux, `/dev/video*`, or

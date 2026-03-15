@@ -22,6 +22,47 @@ import { createThermalFrameProvider } from "./thermal/thermal_frame_provider_fac
 
 const MIN_SOURCE_STATUS_HEARTBEAT_INTERVAL_MS = 250;
 const MAX_SOURCE_STATUS_HEARTBEAT_INTERVAL_MS = 1000;
+const SOURCE_STATUS_CAMERA_TELEMETRY_NON_NEGATIVE_NUMBER_FIELDS = new Set([
+  "capturesAttempted",
+  "capturesSucceeded",
+  "capturesFailed",
+  "consecutiveFailureCount",
+  "lastSuccessfulCaptureTime",
+  "lastCaptureDurationMs",
+  "averageCaptureDurationMs",
+  "effectiveFrameIntervalMs",
+  "captureRetryCount",
+  "captureRetryDelayMs",
+  "recentRetryAttempts",
+  "currentRetryAttempt",
+  "transientFailureCount",
+  "recoveryCount",
+  "lastRecoveryTime",
+  "lastTerminalFailureTime",
+  "replayCurrentIndex",
+  "replayFrameCount",
+  "replayManifestErrorCount",
+  "replayManifestWarningCount",
+  "replayRecordedTimestamp",
+  "replayDelayUntilNextMs",
+  "replayScaledDelayUntilNextMs",
+  "replayTimingOffsetMs",
+  "replayNominalLoopDurationMs",
+  "replayScaledLoopDurationMs",
+  "inputWidth",
+  "inputHeight",
+  "outputWidth",
+  "outputHeight",
+  "effectiveFps",
+  "recordDurationSeconds",
+  "testDurationSeconds",
+  "queueMaxSizeBuffers",
+  "artifactSizeBytes",
+  "preflightPassCount",
+  "preflightWarnCount",
+  "preflightFailCount",
+  "preflightCriticalFailCount",
+]);
 
 export async function startJetsonSenderRuntime(config) {
   const server = new WebSocketServer({
@@ -747,7 +788,7 @@ function createStereoFramePayload(options) {
       fpsTarget: Number(config.fps.toFixed(2)),
       imageMode: config.imageMode,
       providerType: providerFrame.providerType,
-      ...(providerFrame.extras ?? {}),
+      ...sanitizePrimitiveMetadataRecord(providerFrame.extras),
     },
     overlay: {
       label:
@@ -906,7 +947,7 @@ function createSourceStatusCameraTelemetry(providerStatus) {
     return undefined;
   }
 
-  return {
+  return sanitizeSourceStatusCameraTelemetry({
     captureBackendName: providerStatus.backendType,
     bridgeMode: providerStatus.bridgeMode,
     startupValidated: providerStatus.startupValidated,
@@ -994,7 +1035,7 @@ function createSourceStatusCameraTelemetry(providerStatus) {
     projectName: providerStatus.projectName,
     configPath: providerStatus.configPath,
     gstLaunchBinary: providerStatus.gstLaunchBinary,
-  };
+  });
 }
 
 function createSourceStatusThermalTelemetry(thermalProviderStatus) {
@@ -1030,6 +1071,52 @@ function createSourceStatusIrIlluminatorStatus(irIlluminatorStatus) {
     irFaultState: irIlluminatorStatus.irFaultState,
     irErrorText: irIlluminatorStatus.irErrorText,
   };
+}
+
+function sanitizeSourceStatusCameraTelemetry(telemetry) {
+  const sanitized = {};
+
+  for (const [key, value] of Object.entries(telemetry)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    if (SOURCE_STATUS_CAMERA_TELEMETRY_NON_NEGATIVE_NUMBER_FIELDS.has(key)) {
+      if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+        sanitized[key] = value;
+      }
+      continue;
+    }
+
+    sanitized[key] = value;
+  }
+
+  return sanitized;
+}
+
+function sanitizePrimitiveMetadataRecord(record) {
+  if (!record || typeof record !== "object") {
+    return {};
+  }
+
+  const sanitized = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (value === null) {
+      sanitized[key] = value;
+      continue;
+    }
+
+    if (typeof value === "string" || typeof value === "boolean") {
+      sanitized[key] = value;
+      continue;
+    }
+
+    if (typeof value === "number" && Number.isFinite(value)) {
+      sanitized[key] = value;
+    }
+  }
+
+  return sanitized;
 }
 
 function describeStereoFormatNote(config, providerStatus) {

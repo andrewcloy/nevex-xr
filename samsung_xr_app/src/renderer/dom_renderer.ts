@@ -718,7 +718,7 @@ export class DomRendererAdapter {
                         ${
                           scene.statusPanel.panel.transportAdapterType === "jetson_stub"
                             ? `
-                                <label class="group-label">WebSocket Prototype</label>
+                                <label class="group-label">Jetson WebSocket Transport</label>
                                 <div class="toggle-row">
                                   <button
                                     class="button button--secondary"
@@ -736,7 +736,7 @@ export class DomRendererAdapter {
                                   </button>
                                 </div>
                                 <label class="group-label" for="jetson-sample-action">
-                                  Jetson Stub Ingress
+                                  Jetson Sample Ingress
                                 </label>
                                 <button
                                   id="jetson-sample-action"
@@ -2056,7 +2056,7 @@ function renderTransportAdapterOption(
   type: LiveTransportAdapterType,
   currentType: LiveTransportAdapterType,
 ): string {
-  const label = type === "dev" ? "Development" : "Jetson Stub";
+  const label = type === "dev" ? "Development" : "Jetson WebSocket";
   return `
     <label class="mode-option">
       <input

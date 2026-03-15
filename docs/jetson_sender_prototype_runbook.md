@@ -10,6 +10,9 @@ The canonical CLI entry is now `node ./scripts/jetson_sender_runtime.mjs` or
 `sender:prototype` commands remain available as compatibility aliases, so older
 notes in this document still work if they have not been rewritten yet.
 
+For the shortest first live Jetson-to-XR bring-up checklist, use
+`docs/jetson_first_live_bringup.md`.
+
 Available provider types:
 
 - `still`: repeatedly serves one configured left/right image pair
