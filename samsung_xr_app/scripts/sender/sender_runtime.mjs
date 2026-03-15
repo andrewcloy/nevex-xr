@@ -17,12 +17,13 @@ import {
 } from "./fault_injection.mjs";
 import { createProtocolImagePayload } from "./frame_provider_support.mjs";
 import { encodeBinaryStereoFrameMessage } from "./jetson_binary_stereo_frame_message.mjs";
+import { parseSenderCliArgs } from "./sender_config.mjs";
 import { createThermalFrameProvider } from "./thermal/thermal_frame_provider_factory.mjs";
 
 const MIN_SOURCE_STATUS_HEARTBEAT_INTERVAL_MS = 250;
 const MAX_SOURCE_STATUS_HEARTBEAT_INTERVAL_MS = 1000;
 
-export async function startJetsonSenderPrototype(config) {
+export async function startJetsonSenderRuntime(config) {
   const server = new WebSocketServer({
     host: config.host,
     port: config.port,
@@ -53,7 +54,9 @@ export async function startJetsonSenderPrototype(config) {
   return server;
 }
 
-export function logSenderStartup(config) {
+export const startJetsonSenderPrototype = startJetsonSenderRuntime;
+
+export function logJetsonSenderRuntimeStartup(config) {
   console.log(
     `[sender-prototype] listening on ws://${config.host}:${config.port}${config.path}`,
   );
@@ -151,6 +154,17 @@ export function logSenderStartup(config) {
   }
 
   console.log("[sender-prototype] generated provider: dynamic SVG test patterns.");
+}
+
+export const logSenderStartup = logJetsonSenderRuntimeStartup;
+
+export async function runJetsonSenderRuntimeCli(
+  argv = process.argv.slice(2),
+) {
+  const config = parseSenderCliArgs(argv);
+  logJetsonSenderRuntimeStartup(config);
+  await startJetsonSenderRuntime(config);
+  return config;
 }
 
 async function handleClientConnection(options) {

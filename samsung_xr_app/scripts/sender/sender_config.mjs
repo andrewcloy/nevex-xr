@@ -487,9 +487,12 @@ export function parseSenderCliArgs(argv) {
 
 export function printSenderHelp() {
   console.log(`
-Jetson sender prototype
+Jetson sender runtime
 
 Usage:
+  node ./scripts/jetson_sender_runtime.mjs [options]
+
+Compatibility alias:
   node ./scripts/jetson_sender_prototype.mjs [options]
 
 Common options:

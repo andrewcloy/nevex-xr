@@ -3,6 +3,11 @@
 This runbook is the practical bring-up guide for validating the sender on a
 real Linux/Jetson host with two cameras.
 
+The canonical sender entry is now `npm run sender:runtime -- ...` or
+`node ./scripts/jetson_sender_runtime.mjs ...`. Older `sender:prototype`
+examples remain valid as compatibility aliases, but new validation flows should
+prefer the runtime entry name.
+
 Before Jetson hardware is ready, you can rehearse the same camera provider path
 locally with `--capture-backend simulated` or `--capture-backend replay`. Both
 paths are cross-platform and do not require Linux, `/dev/video*`, or

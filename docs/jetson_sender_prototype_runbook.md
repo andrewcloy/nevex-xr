@@ -1,9 +1,14 @@
-# Jetson Sender Prototype Runbook
+# Jetson Sender Runtime Runbook
 
-This runbook covers the first real sender prototype path for the Samsung XR
-browser viewer. The prototype is intentionally simple, but it now includes a
+This runbook covers the canonical Jetson sender runtime path for the Samsung XR
+browser viewer. The runtime remains intentionally simple, but it now includes a
 clean sender-side frame-provider seam so frame production can be swapped without
 rewriting protocol logic.
+
+The canonical CLI entry is now `node ./scripts/jetson_sender_runtime.mjs` or
+`npm run sender:runtime`. The older `jetson_sender_prototype.mjs` and
+`sender:prototype` commands remain available as compatibility aliases, so older
+notes in this document still work if they have not been rewritten yet.
 
 Available provider types:
 
@@ -55,7 +60,7 @@ From the project root:
 npm run dev
 ```
 
-## Run The Sender Prototype
+## Run The Sender Runtime
 
 ### Default still-image mode
 
@@ -65,19 +70,19 @@ for Jetson bring-up when you only need to prove protocol and browser rendering.
 With the default local sample images:
 
 ```powershell
-npm run sender:prototype
+npm run sender:runtime
 ```
 
 Equivalent direct command:
 
 ```powershell
-node ./scripts/jetson_sender_prototype.mjs
+node ./scripts/jetson_sender_runtime.mjs
 ```
 
 ### Still-image mode with your own files
 
 ```powershell
-node ./scripts/jetson_sender_prototype.mjs `
+node ./scripts/jetson_sender_runtime.mjs `
   --provider still `
   --left-image "C:\path\to\left_eye.png" `
   --right-image "C:\path\to\right_eye.png"
@@ -88,7 +93,7 @@ node ./scripts/jetson_sender_prototype.mjs `
 This is best when you want an obvious changing frame without managing files.
 
 ```powershell
-node ./scripts/jetson_sender_prototype.mjs `
+node ./scripts/jetson_sender_runtime.mjs `
   --provider generated `
   --fps 2 `
   --image-mode data_url
@@ -101,7 +106,7 @@ forward JPEG bytes over WebSocket without converting them to base64 or
 `data:` URLs first.
 
 ```powershell
-node ./scripts/jetson_sender_prototype.mjs `
+node ./scripts/jetson_sender_runtime.mjs `
   --provider camera `
   --capture-backend jetson `
   --jetson-preview-enabled true `
