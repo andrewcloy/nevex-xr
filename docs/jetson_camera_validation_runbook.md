@@ -3,10 +3,10 @@
 This runbook is the practical bring-up guide for validating the sender on a
 real Linux/Jetson host with two cameras.
 
-The canonical sender entry is now `npm run sender:runtime -- ...` or
-`node ./scripts/jetson_sender_runtime.mjs ...`. Older `sender:prototype`
-examples remain valid as compatibility aliases, but new validation flows should
-prefer the runtime entry name.
+The canonical sender entries are now `npm run sender:runtime -- ...`,
+`npm run sender:runtime:simulated`, and `npm run sender:runtime:jetson`. Older
+`sender:prototype` examples remain valid as compatibility aliases, but new
+validation flows should prefer the runtime entry name.
 
 Before Jetson hardware is ready, you can rehearse the same camera provider path
 locally with `--capture-backend simulated` or `--capture-backend replay`. Both
@@ -36,6 +36,157 @@ Confirm that:
 - two readable camera device nodes such as `/dev/video0` and `/dev/video1`
 - permission to access those device nodes from the sender process
 
+## Milestone Scope Guardrails
+
+For the current bring-up-readiness milestone, keep this runbook focused on first
+live stereo delivery.
+
+- do not modify sender/runtime architecture while validating
+- do not redesign XR UI surfaces during bring-up
+- do not begin thermal or AI work in this pass
+- isolate hardware/environment blockers before proposing software expansion
+
+## Launch Commands By Stage
+
+Work through these stages in order and stop at the first failing stage. That
+keeps transport issues, replay issues, Jetson runtime issues, and live preview
+issues separated instead of debugging all of them at once.
+
+### 1. Rehearse camera-mode sender diagnostics without Jetson
+
+From `NEVEX_XR/samsung_xr_app`:
+
+```bash
+npm run sender:runtime:simulated -- \
+  --health-log-interval-ms 3000
+```
+
+This validates the camera-mode sender path, `source_status` heartbeats, retry
+behavior, and browser diagnostics without Linux, `/dev/video*`, or the Python
+Jetson runtime.
+
+### 2. Validate replay inputs before using live cameras
+
+From `NEVEX_XR/samsung_xr_app`:
+
+```bash
+npm run sender:preflight -- \
+  --provider camera \
+  --capture-backend replay \
+  --replay-manifest ./scripts/assets/sequence/replay_manifest.json \
+  --replay-fps-mode recorded \
+  --replay-time-scale 0.5 \
+  --replay-loop true
+```
+
+Use this when you need realistic scene content and timing before live camera
+bring-up is ready.
+
+### 3. Validate the Python Jetson runtime directly
+
+From `NEVEX_XR`:
+
+```bash
+python3 ./jetson_runtime/app.py --mode preflight --profile headset_preview_720p60
+python3 ./jetson_runtime/app.py --mode stereo-smoke --profile headset_preview_720p60 --run-preflight
+```
+
+If these commands fail, fix the Jetson runtime, camera, or GStreamer problem
+before starting the Node sender bridge.
+
+### 4. Bring up the sender bridge in control-plane mode first
+
+From `NEVEX_XR/samsung_xr_app`:
+
+```bash
+npm run sender:runtime -- \
+  --provider camera \
+  --capture-backend jetson \
+  --jetson-run-preflight-on-start true \
+  --health-log \
+  --health-log-interval-ms 3000
+```
+
+This is the safest first live Jetson sender launch. It should surface Jetson
+profile, preflight, snapshot, and recording telemetry in the XR UI, but it
+intentionally does not stream continuous `stereo_frame` messages yet.
+
+### 5. Enable the live preview bridge
+
+From `NEVEX_XR/samsung_xr_app`:
+
+```bash
+npm run sender:runtime:jetson -- \
+  --jetson-run-preflight-on-start true \
+  --jetson-profile headset_preview_720p60 \
+  --health-log \
+  --health-log-interval-ms 3000
+```
+
+`sender:runtime:jetson` is the canonical shortcut for Jetson preview bridge
+bring-up. It enables `--capture-backend jetson`,
+`--jetson-preview-enabled true`, and `--image-mode binary_frame` so the sender
+can forward Jetson-authored preview JPEGs without `base64`/`data:` URL
+materialization.
+
+## Exact Dual-Host First Live Launch Sequence
+
+Use this as the operator checklist for first real Jetson-to-XR bring-up.
+
+1. On Jetson host (`NEVEX_XR`), validate Python runtime first:
+
+```bash
+python3 ./jetson_runtime/app.py --mode preflight --profile headset_preview_720p60
+python3 ./jetson_runtime/app.py --mode stereo-smoke --profile headset_preview_720p60 --run-preflight
+```
+
+2. On Jetson host (`NEVEX_XR/samsung_xr_app`), start control-plane bridge first:
+
+```bash
+npm run sender:runtime -- \
+  --provider camera \
+  --capture-backend jetson \
+  --jetson-run-preflight-on-start true \
+  --health-log \
+  --health-log-interval-ms 3000
+```
+
+3. On XR host (`NEVEX_XR/samsung_xr_app`), launch the app:
+
+```powershell
+npm run dev
+```
+
+4. In XR UI, set:
+   - `Source mode`: `Live`
+   - adapter: `Jetson WebSocket Transport Adapter`
+   - `Host`: Jetson host
+   - `Port`: `8090`
+   - `Path`: `/jetson/messages`
+   - click `Apply Transport Config`, then `Connect WebSocket`
+
+5. Validate control-plane telemetry first:
+   - `Bridge mode`: `jetson_runtime_control_plane`
+   - `Runtime source mode`: `control_plane`
+   - Jetson profile/preflight summaries visible
+   - no continuous `stereo_frame` stream expected yet
+
+6. On Jetson host, switch to preview bridge:
+
+```bash
+npm run sender:runtime:jetson -- \
+  --jetson-run-preflight-on-start true \
+  --jetson-profile headset_preview_720p60 \
+  --health-log \
+  --health-log-interval-ms 3000
+```
+
+7. Validate live preview:
+   - `Bridge mode`: `jetson_runtime_preview_bridge`
+   - `Runtime source mode`: `camera`
+   - `Last message type`, `Last sequence`, and `Last frame` continue advancing
+   - left/right imagery updates continuously in the XR viewer
+
 ## Local Rehearsal Before Jetson
 
 Use the simulated backend when you want the full camera-mode sender path on a
@@ -45,7 +196,7 @@ need realistic scene content.
 Example:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend simulated \
   --capture-width 1280 \
@@ -78,7 +229,7 @@ and want more realistic scene content through the same camera-mode path.
 Fixed timing replay example:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend replay \
   --left-replay-dir ./scripts/assets/sequence/left \
@@ -94,7 +245,7 @@ npm run sender:prototype -- \
 Recorded timing replay example using the bundled manifest:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend replay \
   --replay-manifest ./scripts/assets/sequence/replay_manifest.json \
@@ -110,7 +261,7 @@ npm run sender:prototype -- \
 Recorded timing replay slowed to `0.5x`:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend replay \
   --replay-manifest ./scripts/assets/sequence/replay_manifest.json \
@@ -122,7 +273,7 @@ npm run sender:prototype -- \
 Recorded timing replay sped up to `2.0x`:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend replay \
   --replay-manifest ./scripts/assets/sequence/replay_manifest.json \
@@ -415,7 +566,7 @@ Common replay manifest failures:
 After preflight passes:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend gstreamer \
   --camera-profile hardware_safe \
@@ -430,7 +581,7 @@ npm run sender:prototype -- \
 If needed, override individual settings explicitly:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend gstreamer \
   --camera-profile hardware_safe \
@@ -452,7 +603,7 @@ npm run sender:prototype -- \
 Enable recurring sender-side health summaries:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend gstreamer \
   --camera-profile hardware_safe \
@@ -489,7 +640,7 @@ Recommended rehearsals:
 Transient timeout with recovery:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend simulated \
   --capture-retry-count 2 \
@@ -505,7 +656,7 @@ npm run sender:prototype -- \
 Terminal capture failure after retries are exhausted:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend simulated \
   --capture-retry-count 2 \
@@ -519,7 +670,7 @@ npm run sender:prototype -- \
 Heartbeat loss leading to stale browser telemetry:
 
 ```bash
-npm run sender:prototype -- \
+npm run sender:runtime -- \
   --provider camera \
   --capture-backend simulated \
   --fault-inject-heartbeat-drop \
@@ -539,6 +690,48 @@ On the sender side:
 - stereo frames continue to flow without repeated terminal capture errors
 - during transient capture stalls, `source_status` should continue advancing even
   before the next `stereo_frame` arrives
+
+## Browser Diagnostics First Read
+
+Start with the always-visible status area. If one of these looks wrong, then
+open the diagnostics panel and inspect the full telemetry payload.
+
+- `Source Health`:
+  `Healthy` means clean capture, `Retrying` means the sender is still inside the
+  retry budget, `Degraded` means it recovered after a capture problem,
+  `Terminal Failure` means retries were exhausted, and `Telemetry Stale` means
+  `source_status` heartbeats stopped arriving on time
+- `Runtime source mode`:
+  `control_plane` means the Jetson bridge is only publishing runtime telemetry,
+  while `camera` means live preview frames should also be flowing
+- `Bridge mode`:
+  `jetson_runtime_control_plane` means continuous `stereo_frame` delivery is
+  intentionally disabled, while `jetson_runtime_preview_bridge` means the
+  persistent Jetson preview publisher is active
+- `Jetson runtime status`:
+  the latest sender-side summary text from the Jetson bridge; this is the first
+  field to read after a profile switch, preflight, snapshot, or recording action
+- `Jetson profile`:
+  `runtimeProfileName`, which should match the active Python runtime profile
+- `Jetson preflight`:
+  the Jetson runtime `overall_status` plus `pass`, `warn`, `fail`, and
+  `critical` counts
+- `Capture backend`:
+  confirms whether you are still rehearsing with `simulated`, `replay`, or
+  `gstreamer`, or whether the sender is using the real `jetson` bridge
+- `Recording state` and `Last artifact`:
+  update after bounded Jetson snapshot and recording actions so you can confirm
+  the most recent runtime-produced file path and size
+
+Expected Jetson-specific patterns:
+
+- control-plane bring-up:
+  `Bridge mode` should be `jetson_runtime_control_plane`, `Jetson control plane`
+  should read `Active`, and no continuous `stereo_frame` stream is expected yet
+- preview-bridge bring-up:
+  `Bridge mode` should be `jetson_runtime_preview_bridge`, `Runtime source mode`
+  should read `camera`, and `Last frame` plus `Last sequence` should keep
+  advancing
 
 In the XR browser diagnostics:
 
@@ -629,6 +822,27 @@ adding replay-source identity, loop mode, current replay index, and optional
 manifest-driven timing plus manifest-validation fields so local rehearsals match
 the browser diagnostics structure used for Jetson bring-up.
 
+## Automated Validation
+
+Run the sender and browser suites from `NEVEX_XR/samsung_xr_app`:
+
+```bash
+npm run test:sender
+npm run test:browser
+```
+
+For Jetson sender runtime work specifically, this focused subset validates the
+bridge behavior and diagnostics surfaces described in this runbook:
+
+```bash
+npx vitest run \
+  ./scripts/sender/sender_runtime.test.mjs \
+  ./scripts/sender/capture_backends/jetson_runtime_capture_backend.test.mjs \
+  ./src/stereo_viewer/jetson_sender_runtime_end_to_end.test.ts \
+  ./src/ui/status_panel.test.ts \
+  ./src/ui/diagnostics_panel.test.ts
+```
+
 Good telemetry patterns:
 
 - `startupValidated: true`
@@ -700,6 +914,29 @@ How to interpret sender vs browser telemetry together:
   - pipeline returned bytes that were not a valid JPEG frame
 - payload-size warning
   - reduce resolution, JPEG quality, or fps and retry
+
+## Validation Record Template
+
+For each bring-up session, capture:
+
+- Jetson command(s) used
+- XR app launch command and transport values
+- observed bridge mode and runtime source mode
+- startup message order confirmation:
+  `capabilities -> transport_status -> source_status -> stereo_frame`
+  (streaming lanes only)
+- first live frame timestamp and sequence progression
+- sender-side warnings/errors and immediate mitigation attempted
+
+## Remaining Hardware Blockers
+
+Treat these as hardware/environment blockers for the milestone:
+
+- missing or unstable `/dev/video*` camera nodes
+- `nvargus-daemon` instability or Argus sensor probe failures
+- missing/incompatible GStreamer binaries or plugins
+- physically unstable camera cabling/power
+- network path instability between Jetson sender and XR host
 
 ## Still Not Implemented
 

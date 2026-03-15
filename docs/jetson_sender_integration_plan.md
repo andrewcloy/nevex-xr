@@ -1,154 +1,143 @@
 # Jetson Sender Integration Plan
 
-This note defines the first real Jetson-side sender target for the Samsung XR
-browser viewer. The goal is a small proof-of-life sender that works with the
-current WebSocket JSON protocol before any codec or media transport work starts.
+This plan defines the bring-up-ready path for first live Jetson-to-XR stereo
+delivery using the canonical sender runtime.
 
-The current repo now includes an additive prototype implementation at
-`scripts/jetson_sender_prototype.mjs`. See
-`docs/jetson_sender_prototype_runbook.md` for the exact bring-up flow.
+## Milestone Target
 
-That prototype now routes frame production through a sender-side frame-provider
-seam so future still-image, generated, sequence-replay, or camera-backed
-providers can reuse the same protocol sender core.
+Deliver first live `stereo_frame` traffic from Jetson runtime into the XR app
+without changing sender architecture or UI structure.
 
-The sender also now includes a `camera` provider mode backed by a separate
-capture-backend seam. The current backend is placeholder-only, but it defines
-the future integration point for Jetson stereo capture.
+## Scope Guardrails
 
-## First Sender Goal
+For this milestone:
 
-Build a sender that can:
+- keep runtime architecture additive and unchanged
+- keep existing UI structure and controls unchanged
+- do not begin thermal integration work
+- do not begin AI integration work
 
-1. Expose a WebSocket message endpoint that the current browser XR app can connect to.
-2. Immediately send a `capabilities` message.
-3. Send `transport_status` and `source_status` updates as state changes.
-4. Periodically send `stereo_frame` messages with image-backed left/right eye
-   payloads.
-5. Increment `sequence` monotonically across the session.
+## Canonical Entrypoints
 
-## Recommended Startup Order
+- sender runtime:
+  `samsung_xr_app/scripts/jetson_sender_runtime.mjs`
+- package scripts:
+  - `npm run sender:runtime`
+  - `npm run sender:runtime:simulated`
+  - `npm run sender:runtime:jetson`
+- sender preflight:
+  `npm run sender:preflight`
 
-After the WebSocket is open, send:
+`sender:prototype` remains compatibility-oriented only and is not the primary
+bring-up path.
+
+## Required Startup Message Contract
+
+For each new transport connection, sender startup must preserve:
 
 1. `capabilities`
 2. `transport_status`
 3. `source_status`
-4. first `stereo_frame`
+4. first `stereo_frame` (only when frame streaming is enabled)
 
-That order gives the XR app enough context to display sender identity, current
-transport health, source health, and then actual eye content.
+Control-plane Jetson bridge mode intentionally stops at status traffic and does
+not auto-stream `stereo_frame`.
 
-## Capabilities Expectations
+## Bring-Up Lanes (Narrow To Wide)
 
-The first sender should advertise:
+Use the smallest lane that answers the current question.
 
-- `senderName`
-- `senderVersion`
-- `supportedMessageVersion: 1`
-- `supportedImagePayloadModes`
-- `maxRecommendedPayloadBytes`
-- `stereoFormatNote`
+### Lane A: Local camera-path rehearsal (no Jetson hardware)
 
-Recommended first announcement:
+From `NEVEX_XR/samsung_xr_app`:
 
-- Image mode: `data_url`
-- Recommended max payload: `262144` bytes
-- Stereo note: side-by-side proof-of-life frames with explicit left/right labels
+```powershell
+npm run sender:runtime:simulated -- `
+  --health-log-interval-ms 3000
+```
 
-## Status Expectations
+### Lane B: Replay rehearsal with recorded timing
 
-Use `transport_status` for connection and transport lifecycle changes:
+From `NEVEX_XR/samsung_xr_app`:
 
-- connecting
-- running
-- reconnecting
-- stopped
-- error
+```powershell
+npm run sender:runtime -- `
+  --provider camera `
+  --capture-backend replay `
+  --replay-manifest ".\scripts\assets\sequence\replay_manifest.json" `
+  --replay-fps-mode recorded `
+  --replay-time-scale 1.0 `
+  --replay-loop true `
+  --health-log `
+  --health-log-interval-ms 3000
+```
 
-Use `source_status` for frame-source health:
+### Lane C: First live Jetson control-plane bring-up
 
-- running
-- idle
-- reconnecting
-- stopped
-- error
+From `NEVEX_XR/samsung_xr_app` on the Jetson host:
 
-If frames stall or capture fails, continue sending `source_status` updates even
-before richer media recovery logic exists.
+```bash
+npm run sender:runtime -- \
+  --provider camera \
+  --capture-backend jetson \
+  --jetson-run-preflight-on-start true \
+  --health-log \
+  --health-log-interval-ms 3000
+```
 
-For the new camera-oriented path, `source_status` should be treated as the
-primary health signal for:
+Expected outcome:
 
-- backend unavailable
-- capture not implemented
-- capture failed
-- last capture timestamp
-- last capture error
+- Jetson profile/preflight/artifact telemetry is visible in XR diagnostics
+- continuous `stereo_frame` streaming is still intentionally disabled
 
-## Sequence Expectations
+### Lane D: Live Jetson preview bridge
 
-- Use non-negative integer `sequence` values.
-- Increment by `1` for every outgoing message in the session.
-- Resetting the sequence when a brand-new sender session starts is acceptable.
-- Avoid repeats unless retransmission is intentional.
+From `NEVEX_XR/samsung_xr_app` on the Jetson host:
 
-Current browser diagnostics track:
+```bash
+npm run sender:runtime:jetson -- \
+  --jetson-run-preflight-on-start true \
+  --jetson-profile headset_preview_720p60 \
+  --health-log \
+  --health-log-interval-ms 3000
+```
 
-- repeated sequence count
-- out-of-order count
-- dropped-message estimate from gaps
+Expected outcome:
 
-## Payload Size Expectations
+- bridge mode is `jetson_runtime_preview_bridge`
+- runtime source mode is `camera`
+- `stereo_frame` sequence and frame time advance continuously
 
-Current receiver defaults:
+## Validation Evidence Required Per Bring-Up Session
 
-- `maxMessageBytes`: `524288`
-- `maxImagePayloadBytes`: `262144`
+Capture all of the following in bring-up notes:
 
-Recommended sender behavior:
+- sender command used (full CLI)
+- XR transport host/port/path used
+- first message ordering confirmation (`capabilities` -> `transport_status` ->
+  `source_status` -> `stereo_frame` when streaming)
+- bridge mode and runtime source mode observed
+- profile and preflight summary observed
+- first successful frame timestamp and advancing sequence confirmation
+- any warnings/failures and exact remediation attempted
 
-- stay comfortably under the advertised `maxRecommendedPayloadBytes`
-- keep proof-of-life images small and simple
-- avoid embedding unnecessarily large SVG or base64 content
+## Focused Automated Validation
 
-If a message exceeds limits, the browser receiver rejects it and reports a
-protocol validation error.
+Run from `NEVEX_XR/samsung_xr_app`:
 
-## Recommended First Image Format
+```powershell
+npx vitest run `
+  .\scripts\sender\sender_runtime.test.mjs `
+  .\scripts\sender\capture_backends\jetson_runtime_capture_backend.test.mjs `
+  .\src\stereo_viewer\jetson_sender_runtime_end_to_end.test.ts
+```
 
-For the first real Jetson proof-of-life, use:
+## Known Hardware Blockers (Track Explicitly)
 
-- `data:image/svg+xml` data URLs if generating test frames in software
-- or a small `image/png` base64 payload if raster images are easier on the
-  sender side
+Treat these as hardware/environment blockers, not runtime-architecture tasks:
 
-Prefer the simplest image generation path that lets the sender prove:
-
-- left/right eye messages are distinct
-- sequence is advancing
-- timestamps are current
-- the XR viewer can render real image-backed content
-
-## Sender Helper Target
-
-For local reference and message construction:
-
-- `jetson_sender_helpers.mjs`
-- `src/stereo_viewer/jetson_sender_contract.ts`
-
-These define the current canonical envelope builders and the minimal sender
-contract expected by the XR-side receiver.
-
-## Planned First Camera Backend
-
-Expected first Jetson backend to try:
-
-- `gstreamer`
-
-Why:
-
-- it matches common Jetson CSI and hardware-camera bring-up patterns
-- it can provide snapshot-style left/right capture without redesigning the
-  sender runtime
-- it keeps the provider/backend split clean for later evolution
+- camera nodes missing or unstable (`/dev/video*`)
+- `gst-launch-1.0`/plugins missing on target host
+- `nvargus-daemon` unhealthy
+- Jetson runtime preflight failures
+- network path between Jetson host and XR host unavailable

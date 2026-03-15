@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { WebSocket } from "ws";
 import { decodeBinaryStereoFrameMessage } from "./jetson_binary_stereo_frame_message.mjs";
+import { parseSenderCliArgs } from "./sender_config.mjs";
 
 let activeFrameProvider;
 
@@ -180,10 +181,51 @@ describe("sender runtime", () => {
       });
     }, 3000);
 
+    const startupCapabilitiesIndex = messages.findIndex((message) => {
+      return message.messageType === "capabilities";
+    });
+    const startupTransportStatusIndex = messages.findIndex((message) => {
+      return message.messageType === "transport_status";
+    });
+    const startupSourceStatusIndex = messages.findIndex((message) => {
+      return message.messageType === "source_status";
+    });
+
+    expect(startupCapabilitiesIndex).toBeGreaterThanOrEqual(0);
+    expect(startupTransportStatusIndex).toBeGreaterThan(startupCapabilitiesIndex);
+    expect(startupSourceStatusIndex).toBeGreaterThan(startupTransportStatusIndex);
+
     await new Promise((resolve) => {
       setTimeout(resolve, 600);
     });
 
+    const transportStatusMessage = messages.find((message) => {
+      return message.messageType === "transport_status";
+    });
+    const initialControlPlaneStatusMessage = messages.find((message) => {
+      return (
+        message.messageType === "source_status" &&
+        message.payload?.cameraTelemetry?.runtimeProfileName === "quality_1080p30"
+      );
+    });
+
+    expect(transportStatusMessage?.payload?.statusText).toContain(
+      "continuous stereo_frame transport is disabled",
+    );
+    expect(initialControlPlaneStatusMessage?.payload?.cameraTelemetry).toMatchObject({
+      captureBackendName: "jetson",
+      bridgeMode: "jetson_runtime_control_plane",
+      frameSourceMode: "control_plane",
+      frameSourceName: "jetson_runtime_bridge",
+      runtimeProfileName: "quality_1080p30",
+      runtimeProfileType: "validation",
+      availableProfileNames: ["quality_1080p30", "low_latency_720p60"],
+      preflightOverallStatus: "pass",
+      preflightPassCount: 14,
+      preflightWarnCount: 0,
+      preflightFailCount: 0,
+      preflightCriticalFailCount: 0,
+    });
     expect(
       messages.some((message) => {
         return message.messageType === "stereo_frame";
@@ -219,6 +261,23 @@ describe("sender runtime", () => {
       });
     }, 3000);
 
+    const selectedControlPlaneStatusMessage = messages.find((message) => {
+      return (
+        message.messageType === "source_status" &&
+        message.payload?.cameraTelemetry?.runtimeProfileName === "low_latency_720p60"
+      );
+    });
+
+    expect(selectedControlPlaneStatusMessage?.payload?.cameraTelemetry).toMatchObject({
+      bridgeMode: "jetson_runtime_control_plane",
+      frameSourceMode: "control_plane",
+      runtimeProfileName: "low_latency_720p60",
+      runtimeProfileType: "operational",
+      outputWidth: 2560,
+      outputHeight: 720,
+      effectiveFps: 60,
+      preflightOverallStatus: "pass",
+    });
     expect(
       messages.some((message) => {
         return (
@@ -269,6 +328,52 @@ describe("sender runtime", () => {
       return messages.some((message) => message.messageType === "stereo_frame");
     }, 3000);
 
+    const startupCapabilitiesIndex = messages.findIndex((message) => {
+      return message.messageType === "capabilities";
+    });
+    const startupTransportStatusIndex = messages.findIndex((message) => {
+      return message.messageType === "transport_status";
+    });
+    const startupSourceStatusIndex = messages.findIndex((message) => {
+      return message.messageType === "source_status";
+    });
+    const startupStereoFrameIndex = messages.findIndex((message) => {
+      return message.messageType === "stereo_frame";
+    });
+
+    expect(startupCapabilitiesIndex).toBeGreaterThanOrEqual(0);
+    expect(startupTransportStatusIndex).toBeGreaterThan(startupCapabilitiesIndex);
+    expect(startupSourceStatusIndex).toBeGreaterThan(startupTransportStatusIndex);
+    expect(startupStereoFrameIndex).toBeGreaterThan(startupSourceStatusIndex);
+
+    const transportStatusMessage = messages.find((message) => {
+      return message.messageType === "transport_status";
+    });
+    const previewBridgeStatusMessage = messages.find((message) => {
+      return (
+        message.messageType === "source_status" &&
+        message.payload?.cameraTelemetry?.bridgeMode ===
+          "jetson_runtime_preview_bridge"
+      );
+    });
+
+    expect(transportStatusMessage?.payload?.statusText).toContain(
+      "persistent Jetson preview publisher are active",
+    );
+    expect(previewBridgeStatusMessage?.payload?.cameraTelemetry).toMatchObject({
+      captureBackendName: "jetson",
+      bridgeMode: "jetson_runtime_preview_bridge",
+      frameSourceMode: "camera",
+      frameSourceName: "jetson_runtime_preview",
+      runtimeProfileName: "headset_preview_720p60",
+      runtimeProfileType: "operational",
+      availableProfileNames: ["headset_preview_720p60", "low_latency_720p60"],
+      preflightOverallStatus: "pass",
+      preflightPassCount: 14,
+      preflightWarnCount: 0,
+      preflightFailCount: 0,
+      preflightCriticalFailCount: 0,
+    });
     expect(
       messages.some((message) => {
         return (
@@ -365,6 +470,57 @@ describe("sender runtime", () => {
       socket.once("close", resolve);
     });
     await closeServer(server);
+  });
+
+  it("parses canonical Jetson control-plane launch flags", () => {
+    const config = parseSenderCliArgs([
+      "--provider",
+      "camera",
+      "--capture-backend",
+      "jetson",
+      "--jetson-run-preflight-on-start",
+      "true",
+      "--health-log",
+      "--health-log-interval-ms",
+      "3000",
+    ]);
+
+    expect(config.provider).toBe("camera");
+    expect(config.captureBackend).toBe("jetson");
+    expect(config.jetsonPreviewEnabled).toBe(false);
+    expect(config.imageMode).toBe("base64");
+    expect(config.jetsonRunPreflightOnStart).toBe(true);
+    expect(config.healthLog).toBe(true);
+    expect(config.healthLogIntervalMs).toBe(3000);
+  });
+
+  it("parses canonical Jetson preview-bridge launch flags", () => {
+    const config = parseSenderCliArgs([
+      "--provider",
+      "camera",
+      "--capture-backend",
+      "jetson",
+      "--jetson-preview-enabled",
+      "true",
+      "--image-mode",
+      "binary_frame",
+      "--jetson-run-preflight-on-start",
+      "true",
+      "--jetson-profile",
+      "headset_preview_720p60",
+      "--health-log",
+      "--health-log-interval-ms",
+      "3000",
+    ]);
+
+    expect(config.provider).toBe("camera");
+    expect(config.captureBackend).toBe("jetson");
+    expect(config.jetsonPreviewEnabled).toBe(true);
+    expect(config.imageMode).toBe("binary_frame");
+    expect(config.jetsonRunPreflightOnStart).toBe(true);
+    expect(config.jetsonRuntimeProfile).toBe("headset_preview_720p60");
+    expect(config.healthLog).toBe(true);
+    expect(config.healthLogIntervalMs).toBe(3000);
   });
 });
 
@@ -643,7 +799,7 @@ function createJetsonControlPlaneProvider() {
     frameSourceMode: "control_plane",
     frameSourceName: "jetson_runtime_bridge",
     runtimeProfileName: "quality_1080p30",
-    runtimeProfileType: "operational",
+    runtimeProfileType: "validation",
     availableProfileNames: ["quality_1080p30", "low_latency_720p60"],
     inputWidth: 1920,
     inputHeight: 1080,
@@ -685,6 +841,7 @@ function createJetsonControlPlaneProvider() {
         command.payload?.action === "select_profile"
       ) {
         status.runtimeProfileName = command.payload.profileName;
+        status.runtimeProfileType = "operational";
         status.inputWidth = 1280;
         status.inputHeight = 720;
         status.outputWidth = 2560;
