@@ -140,6 +140,53 @@ describe("JetsonWebSocketTransportClient", () => {
     expect(getLast(transportStatuses)?.transportState).toBe("error");
     expect(getLast(transportStatuses)?.lastError).toBe("Connect timeout");
   });
+
+  it("surfaces actionable pre-open websocket failures while retrying", async () => {
+    vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+
+    const target = new RecordingDispatchTarget();
+    const dispatcher = new JetsonMessageDispatcher(target);
+    const transportStatuses: JetsonTransportStatusPayload[] = [];
+    const transportErrors: JetsonTransportErrorPayload[] = [];
+    const sockets: FakeWebSocket[] = [];
+    const client = new JetsonWebSocketTransportClient({
+      dispatcher,
+      onTransportStatus: (payload) => {
+        transportStatuses.push(payload);
+      },
+      onTransportError: (payload) => {
+        transportErrors.push(payload);
+      },
+      createWebSocket: (url) => {
+        const socket = new FakeWebSocket(url);
+        sockets.push(socket);
+        return socket as unknown as WebSocket;
+      },
+    });
+
+    await client.connect(
+      createConfig({
+        host: "192.168.1.56",
+        reconnectEnabled: true,
+        reconnectIntervalMs: 1500,
+      }),
+    );
+
+    sockets[0]?.emitError();
+    sockets[0]?.close(1006, "");
+    await flushMicrotasks();
+
+    expect(getLast(transportErrors)?.message).toContain(
+      "sender is bound for LAN access instead of localhost-only",
+    );
+    expect(getLast(transportStatuses)?.transportState).toBe("reconnecting");
+    expect(getLast(transportStatuses)?.statusText).toContain(
+      "failed before socket open",
+    );
+    expect(getLast(transportStatuses)?.lastError).toContain(
+      "192.168.1.56:8090/jetson/messages",
+    );
+  });
 });
 
 class RecordingDispatchTarget implements JetsonMessageDispatchTarget {
@@ -227,6 +274,10 @@ class FakeWebSocket {
 
   emitMessage(data: unknown): void {
     this.emit("message", { data });
+  }
+
+  emitError(): void {
+    this.emit("error", {});
   }
 
   private emit(type: string, event: unknown): void {

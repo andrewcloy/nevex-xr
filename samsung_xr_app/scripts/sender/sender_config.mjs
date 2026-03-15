@@ -46,7 +46,7 @@ export const HARDWARE_SAFE_CAMERA_PROFILE = Object.freeze({
 });
 
 export const DEFAULT_SENDER_CONFIG = {
-  host: "127.0.0.1",
+  host: "0.0.0.0",
   port: 8090,
   path: "/jetson/messages",
   fps: 1,

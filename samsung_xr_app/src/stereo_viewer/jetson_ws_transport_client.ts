@@ -60,6 +60,10 @@ export class JetsonWebSocketTransportClient {
 
   private activeSessionId = 0;
 
+  private hadSocketOpenThisSession = false;
+
+  private sessionTransportErrorText?: string;
+
   constructor(options: JetsonWebSocketTransportClientOptions) {
     this.dispatcher = options.dispatcher;
     this.onTransportStatus = options.onTransportStatus;
@@ -76,6 +80,8 @@ export class JetsonWebSocketTransportClient {
     this.manualDisconnect = false;
     this.clearReconnectTimer();
     this.clearConnectTimeout();
+    this.hadSocketOpenThisSession = false;
+    this.sessionTransportErrorText = undefined;
 
     if (this.socket) {
       const readyState = this.socket.readyState;
@@ -146,6 +152,8 @@ export class JetsonWebSocketTransportClient {
       }
 
       this.clearConnectTimeout();
+      this.hadSocketOpenThisSession = true;
+      this.sessionTransportErrorText = undefined;
       this.onTransportStatus({
         transportState: "running",
         connected: true,
@@ -185,10 +193,14 @@ export class JetsonWebSocketTransportClient {
         return;
       }
 
+      const message = this.hadSocketOpenThisSession
+        ? `WebSocket transport error on ${url}.`
+        : buildPreOpenTransportFailureMessage(url);
+      this.sessionTransportErrorText = message;
       this.onTransportError({
         stage: "transport",
         recoverable: Boolean(this.activeConfig?.reconnectEnabled),
-        message: `WebSocket transport error on ${url}.`,
+        message,
       });
     });
 
@@ -201,6 +213,7 @@ export class JetsonWebSocketTransportClient {
       this.revokeRetainedBinaryFrameObjectUrls();
       this.socket = undefined;
       const closeReason = event.reason || `Close code ${event.code}`;
+      const lastErrorText = this.sessionTransportErrorText ?? closeReason;
 
       if (this.manualDisconnect) {
         this.onTransportStatus({
@@ -216,8 +229,10 @@ export class JetsonWebSocketTransportClient {
         this.onTransportStatus({
           transportState: "reconnecting",
           connected: false,
-          statusText: `WebSocket transport disconnected. Retrying in ${this.activeConfig.reconnectIntervalMs} ms...`,
-          lastError: closeReason,
+          statusText: this.hadSocketOpenThisSession
+            ? `WebSocket transport disconnected. Retrying in ${this.activeConfig.reconnectIntervalMs} ms...`
+            : `WebSocket connection failed before socket open. Retrying in ${this.activeConfig.reconnectIntervalMs} ms...`,
+          lastError: lastErrorText,
         });
         this.scheduleReconnect();
         return;
@@ -226,8 +241,10 @@ export class JetsonWebSocketTransportClient {
       this.onTransportStatus({
         transportState: "error",
         connected: false,
-        statusText: `WebSocket transport disconnected from ${url}.`,
-        lastError: closeReason,
+        statusText: this.hadSocketOpenThisSession
+          ? `WebSocket transport disconnected from ${url}.`
+          : `WebSocket connection failed before socket open at ${url}.`,
+        lastError: lastErrorText,
       });
     });
   }
@@ -238,6 +255,8 @@ export class JetsonWebSocketTransportClient {
     this.clearConnectTimeout();
     this.messageHandlingQueue = Promise.resolve();
     this.activeSessionId += 1;
+    this.hadSocketOpenThisSession = false;
+    this.sessionTransportErrorText = undefined;
     this.revokeRetainedBinaryFrameObjectUrls();
 
     const socket = this.socket;
@@ -531,4 +550,8 @@ export function buildJetsonWebSocketUrl(config: LiveTransportConfig): string {
 
 function measureUtf8ByteSize(value: string): number {
   return new TextEncoder().encode(value).length;
+}
+
+function buildPreOpenTransportFailureMessage(url: string): string {
+  return `WebSocket connection attempt failed for ${url}. Browser error details were not exposed; check host, port, path, firewall/LAN reachability, and whether the sender is bound for LAN access instead of localhost-only.`;
 }
