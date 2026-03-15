@@ -4,7 +4,9 @@ import {
   writeSync,
 } from "node:fs";
 import { EventEmitter } from "node:events";
+import path from "node:path";
 import { PassThrough } from "node:stream";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   encodePreviewFrameMessage,
@@ -13,7 +15,30 @@ import {
 } from "./jetson_preview_publisher_stream_protocol.mjs";
 import { JetsonRuntimeCaptureBackend } from "./jetson_runtime_capture_backend.mjs";
 
+const CAPTURE_BACKENDS_DIR = path.dirname(fileURLToPath(import.meta.url));
+const XR_APP_ROOT = path.resolve(CAPTURE_BACKENDS_DIR, "..", "..", "..");
+const UNIFIED_PROJECT_ROOT = path.resolve(XR_APP_ROOT, "..");
+
 describe("JetsonRuntimeCaptureBackend", () => {
+  it("prefers the canonical top-level Jetson runtime sibling by default", () => {
+    const backend = new JetsonRuntimeCaptureBackend({});
+
+    expect(backend.options.jetsonRuntimeAppPath).toBe(
+      path.resolve(UNIFIED_PROJECT_ROOT, "jetson_runtime", "app.py"),
+    );
+    expect(backend.options.jetsonRuntimeConfigPath).toBe(
+      path.resolve(
+        UNIFIED_PROJECT_ROOT,
+        "jetson_runtime",
+        "config",
+        "camera_config.json",
+      ),
+    );
+    expect(backend.options.jetsonRuntimeWorkingDirectory).toBe(
+      path.resolve(UNIFIED_PROJECT_ROOT, "jetson_runtime"),
+    );
+  });
+
   it("hydrates Jetson introspection state and supports profile selection", async () => {
     const calls = [];
     const execFileImpl = createExecFileStub(calls);

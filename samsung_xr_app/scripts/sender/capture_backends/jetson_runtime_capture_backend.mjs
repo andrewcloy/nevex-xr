@@ -1,4 +1,5 @@
 import { execFile, spawn } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -9,15 +10,18 @@ import { JetsonPreviewPublisherStreamParser } from "./jetson_preview_publisher_s
 import { JetsonPreviewSharedMemoryTransport } from "./jetson_preview_shared_memory_transport.mjs";
 
 const CAPTURE_BACKENDS_DIR = path.dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = path.resolve(CAPTURE_BACKENDS_DIR, "..", "..", "..");
+const XR_APP_ROOT = path.resolve(CAPTURE_BACKENDS_DIR, "..", "..", "..");
+const UNIFIED_PROJECT_ROOT = path.resolve(XR_APP_ROOT, "..");
+const DEFAULT_JETSON_RUNTIME_ROOT = resolvePreferredExistingPath(
+  path.resolve(UNIFIED_PROJECT_ROOT, "jetson_runtime"),
+  path.resolve(XR_APP_ROOT, "jetson_runtime"),
+);
 const DEFAULT_JETSON_RUNTIME_APP_PATH = path.resolve(
-  PROJECT_ROOT,
-  "jetson_runtime",
+  DEFAULT_JETSON_RUNTIME_ROOT,
   "app.py",
 );
 const DEFAULT_JETSON_RUNTIME_CONFIG_PATH = path.resolve(
-  PROJECT_ROOT,
-  "jetson_runtime",
+  DEFAULT_JETSON_RUNTIME_ROOT,
   "config",
   "camera_config.json",
 );
@@ -1585,6 +1589,17 @@ function normalizeJetsonRuntimeOptions(options) {
         ? true
         : Boolean(options.jetsonRunPreflightOnStart),
   };
+}
+
+function resolvePreferredExistingPath(preferredPath, fallbackPath) {
+  if (fs.existsSync(preferredPath)) {
+    return path.resolve(preferredPath);
+  }
+  if (fs.existsSync(fallbackPath)) {
+    return path.resolve(fallbackPath);
+  }
+
+  return path.resolve(preferredPath);
 }
 
 function resolveSensorLabel(sensorId, eyeLabel) {

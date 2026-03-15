@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -16,8 +17,13 @@ import {
 
 const SENDER_DIR = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPTS_DIR = path.resolve(SENDER_DIR, "..");
-const PROJECT_ROOT = path.resolve(SCRIPTS_DIR, "..");
+const XR_APP_ROOT = path.resolve(SCRIPTS_DIR, "..");
+const UNIFIED_PROJECT_ROOT = path.resolve(XR_APP_ROOT, "..");
 const ASSETS_DIR = path.resolve(SCRIPTS_DIR, "assets");
+const DEFAULT_JETSON_RUNTIME_ROOT = resolvePreferredExistingPath(
+  path.resolve(UNIFIED_PROJECT_ROOT, "jetson_runtime"),
+  path.resolve(XR_APP_ROOT, "jetson_runtime"),
+);
 
 export const SUPPORTED_SENDER_IMAGE_MODES = [
   "base64",
@@ -87,14 +93,13 @@ export const DEFAULT_SENDER_CONFIG = {
   replayPreviewCount: DEFAULT_REPLAY_PREVIEW_ENTRY_COUNT,
   replayManifestPath: undefined,
   jetsonRuntimePythonBin: process.platform === "win32" ? "python" : "python3",
-  jetsonRuntimeAppPath: path.resolve(PROJECT_ROOT, "jetson_runtime", "app.py"),
+  jetsonRuntimeAppPath: path.resolve(DEFAULT_JETSON_RUNTIME_ROOT, "app.py"),
   jetsonRuntimeConfigPath: path.resolve(
-    PROJECT_ROOT,
-    "jetson_runtime",
+    DEFAULT_JETSON_RUNTIME_ROOT,
     "config",
     "camera_config.json",
   ),
-  jetsonRuntimeWorkingDirectory: path.resolve(PROJECT_ROOT, "jetson_runtime"),
+  jetsonRuntimeWorkingDirectory: path.resolve(DEFAULT_JETSON_RUNTIME_ROOT),
   jetsonRuntimeProfile: undefined,
   jetsonPreviewEnabled: false,
   jetsonRunPreflightOnStart: true,
@@ -598,6 +603,17 @@ function applyCameraProfile(config, explicitOverrides) {
 
 function relativeToCwd(filePath) {
   return path.relative(process.cwd(), filePath);
+}
+
+function resolvePreferredExistingPath(preferredPath, fallbackPath) {
+  if (fs.existsSync(preferredPath)) {
+    return path.resolve(preferredPath);
+  }
+  if (fs.existsSync(fallbackPath)) {
+    return path.resolve(fallbackPath);
+  }
+
+  return path.resolve(preferredPath);
 }
 
 function normalizePath(value) {

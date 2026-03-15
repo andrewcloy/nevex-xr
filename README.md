@@ -46,17 +46,26 @@ NEVEX_XR/
 
 The copied `samsung_xr_app/` folder still contains its own nested
 `jetson_runtime/` and `docs/` directories because the current XR sender tooling
-resolves the Jetson runtime relative to the XR app root.
+previously resolved the Jetson runtime relative to the XR app root.
+
+Path normalization is now in place for the copied XR sender defaults:
+
+- prefer top-level `NEVEX_XR/jetson_runtime/`
+- fall back to `NEVEX_XR/samsung_xr_app/jetson_runtime/` if the top-level
+  sibling is unavailable
+
+The intended canonical shared locations are now:
+
+- `NEVEX_XR/jetson_runtime/`
+- `NEVEX_XR/docs/`
 
 That means this master folder is safe and complete today, but there is still one
 follow-up cleanup step before the top-level root becomes the only canonical
 working layout:
 
-1. Repoint XR-side default Jetson runtime paths to the sibling top-level
-   `../jetson_runtime`.
-2. Validate the sender bridge and Jetson control/preview flows from the unified
+1. Validate the sender bridge and Jetson control/preview flows from the unified
    root.
-3. Remove duplicate nested copies from `samsung_xr_app/` only after validation.
+2. Remove duplicate nested copies from `samsung_xr_app/` only after validation.
 
 ## Recommended Use Going Forward
 
@@ -70,8 +79,8 @@ For the future unified repository root:
 - treat `NEVEX_XR/` as the intended GitHub root
 - use top-level `docs/` and top-level `jetson_runtime/` as the future canonical
   shared locations
-- schedule one small path-alignment cleanup pass before removing duplicate
-  nested copies from `samsung_xr_app/`
+- keep nested copies only as temporary compatibility backups until validation is
+  complete
 
 ## Original Safety Net
 

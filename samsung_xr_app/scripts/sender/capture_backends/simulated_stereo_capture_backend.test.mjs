@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it } from "vitest";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createStereoCaptureBackend } from "../capture_backend_factory.mjs";
 import { parseSenderCliArgs } from "../sender_config.mjs";
 import { SimulatedStereoCaptureBackend } from "./simulated_stereo_capture_backend.mjs";
+
+const CAPTURE_BACKENDS_DIR = path.dirname(fileURLToPath(import.meta.url));
+const XR_APP_ROOT = path.resolve(CAPTURE_BACKENDS_DIR, "..", "..", "..");
+const UNIFIED_PROJECT_ROOT = path.resolve(XR_APP_ROOT, "..");
 
 describe("simulated sender camera config", () => {
   it("parses the simulated capture backend", () => {
@@ -20,6 +26,25 @@ describe("simulated sender camera config", () => {
     expect(config.captureBackend).toBe("simulated");
     expect(config.captureWidth).toBe(960);
     expect(config.captureHeight).toBe(540);
+  });
+
+  it("prefers the canonical top-level Jetson runtime sibling when present", () => {
+    const config = parseSenderCliArgs([]);
+
+    expect(config.jetsonRuntimeAppPath).toBe(
+      path.resolve(UNIFIED_PROJECT_ROOT, "jetson_runtime", "app.py"),
+    );
+    expect(config.jetsonRuntimeConfigPath).toBe(
+      path.resolve(
+        UNIFIED_PROJECT_ROOT,
+        "jetson_runtime",
+        "config",
+        "camera_config.json",
+      ),
+    );
+    expect(config.jetsonRuntimeWorkingDirectory).toBe(
+      path.resolve(UNIFIED_PROJECT_ROOT, "jetson_runtime"),
+    );
   });
 });
 
