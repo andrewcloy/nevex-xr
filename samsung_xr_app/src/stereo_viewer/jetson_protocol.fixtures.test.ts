@@ -99,6 +99,62 @@ describe("Jetson protocol fixtures", () => {
     );
   });
 
+  it("treats nullable optional source_status telemetry fields as absent", () => {
+    const parsed = parseJetsonMessageEnvelope({
+      version: 1,
+      messageType: "source_status",
+      timestampMs: 3100,
+      sequence: 3,
+      payload: {
+        sourceState: "running",
+        cameraTelemetry: {
+          captureBackendName: "simulated",
+          frameIntervalMs: null,
+          lastRecoveryTime: null,
+        },
+      },
+    });
+
+    expect(parsed.messageType).toBe("source_status");
+    if (parsed.messageType !== "source_status") {
+      throw new Error("Expected a source_status envelope.");
+    }
+
+    expect(parsed.payload.cameraTelemetry?.captureBackendName).toBe("simulated");
+    expect(parsed.payload.cameraTelemetry?.frameIntervalMs).toBeUndefined();
+    expect(parsed.payload.cameraTelemetry?.lastRecoveryTime).toBeUndefined();
+  });
+
+  it("drops non-primitive stereo extras while preserving frame payloads", () => {
+    const parsed = parseJetsonMessageEnvelope({
+      version: 1,
+      messageType: "stereo_frame",
+      timestampMs: 3200,
+      sequence: 4,
+      payload: {
+        ...createSampleJetsonStereoFramePayload(13, "fixture_stream"),
+        extras: {
+          captureBackend: "simulated",
+          capturesSucceeded: 3,
+          recentCaptureEvents: [
+            {
+              eventType: "retrying",
+            },
+          ],
+        },
+      },
+    });
+
+    expect(parsed.messageType).toBe("stereo_frame");
+    if (parsed.messageType !== "stereo_frame") {
+      throw new Error("Expected a stereo_frame envelope.");
+    }
+
+    expect(parsed.payload.extras?.captureBackend).toBe("simulated");
+    expect(parsed.payload.extras?.capturesSucceeded).toBe(3);
+    expect(parsed.payload.extras?.recentCaptureEvents).toBeUndefined();
+  });
+
   it("dispatches a valid image-backed stereo frame", () => {
     const target = createDispatchTarget();
     const dispatcher = new JetsonMessageDispatcher(target);

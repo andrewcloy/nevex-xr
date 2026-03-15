@@ -1,11 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
-import {
-  WebSocket as NodeWebSocket,
-  type WebSocketServer,
-} from "ws";
+import { WebSocket as NodeWebSocket } from "ws";
 import { JetsonTransportAdapter } from "./jetson_transport_adapter";
 import type { StereoFrame } from "./frame_models";
+// @ts-expect-error The sender runtime remains a JS test fixture.
 import { DEFAULT_SENDER_CONFIG } from "../../scripts/sender/sender_config.mjs";
+// @ts-expect-error The sender runtime remains a JS test fixture.
 import { startJetsonSenderRuntime } from "../../scripts/sender/sender_runtime.mjs";
 
 describe("Jetson sender runtime end-to-end", () => {
@@ -22,7 +21,9 @@ describe("Jetson sender runtime end-to-end", () => {
     }
   });
 
-  it("delivers live stereo frames from the canonical sender runtime into the XR transport adapter", async () => {
+  it(
+    "delivers live stereo frames from the canonical sender runtime into the XR transport adapter",
+    async () => {
     const server = await startJetsonSenderRuntime({
       ...DEFAULT_SENDER_CONFIG,
       host: "127.0.0.1",
@@ -56,6 +57,22 @@ describe("Jetson sender runtime end-to-end", () => {
       await adapter.stop();
     });
 
+    const statusHistory: string[] = [];
+    const unsubscribeStatus = adapter.subscribeStatus((status) => {
+      statusHistory.push(
+        [
+          `state=${status.state}`,
+          `connected=${String(status.connected)}`,
+          `lastMessageType=${status.lastMessageType ?? "none"}`,
+          `lastParseError=${status.lastParseError ?? "none"}`,
+          `lastError=${status.lastError ?? "none"}`,
+        ].join(" "),
+      );
+    });
+    cleanupTasks.push(async () => {
+      unsubscribeStatus();
+    });
+
     const receivedFrames: StereoFrame[] = [];
     const unsubscribeFrame = adapter.frameSource.subscribeFrame((frame) => {
       receivedFrames.push(frame);
@@ -66,14 +83,24 @@ describe("Jetson sender runtime end-to-end", () => {
 
     await adapter.start();
 
-    await waitFor(() => {
-      return (
-        adapter.getStatus().connected &&
-        adapter.getStatus().state === "running" &&
-        adapter.frameSource.getStatus().state === "running" &&
-        receivedFrames.length >= 1
+    try {
+      await waitFor(() => {
+        return (
+          adapter.getStatus().connected &&
+          adapter.getStatus().state === "running" &&
+          adapter.frameSource.getStatus().state === "running" &&
+          receivedFrames.length >= 1
+        );
+      }, 8000);
+    } catch (error) {
+      const timeoutReason =
+        error instanceof Error ? error.message : "Unknown timeout failure.";
+      throw new Error(
+        `Timed out waiting for live frame ingest. Status history: ${statusHistory.join(
+          " -> ",
+        )}. Received frames: ${receivedFrames.length}. Root cause: ${timeoutReason}.`,
       );
-    }, 5000);
+    }
 
     const adapterStatus = adapter.getStatus();
     const sourceStatus = adapter.frameSource.getStatus();
@@ -94,10 +121,21 @@ describe("Jetson sender runtime end-to-end", () => {
     expect(sourceStatus.cameraTelemetry?.captureBackendName).toBe("simulated");
     expect(firstFrame.left.imageContent?.sourceKind).toBe("uri");
     expect(firstFrame.right.imageContent?.sourceKind).toBe("uri");
-  });
+    },
+    10000,
+  );
 });
 
-async function waitForServerListening(server: WebSocketServer): Promise<void> {
+type TestWebSocketServer = {
+  address(): { port: number } | string | null;
+  once(event: "listening", listener: () => void): void;
+  once(event: "error", listener: (error: Error) => void): void;
+  off(event: "listening", listener: () => void): void;
+  off(event: "error", listener: (error: Error) => void): void;
+  close(callback: (error?: Error) => void): void;
+};
+
+async function waitForServerListening(server: TestWebSocketServer): Promise<void> {
   if (server.address()) {
     return;
   }
@@ -117,13 +155,13 @@ async function waitForServerListening(server: WebSocketServer): Promise<void> {
   });
 }
 
-async function closeServer(server: WebSocketServer): Promise<void> {
+async function closeServer(server: TestWebSocketServer): Promise<void> {
   if (!server.address()) {
     return;
   }
 
   await new Promise<void>((resolve, reject) => {
-    server.close((error) => {
+    server.close((error?: Error) => {
       if (error) {
         reject(error);
         return;

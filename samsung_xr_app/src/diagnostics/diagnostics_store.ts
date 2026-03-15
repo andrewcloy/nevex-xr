@@ -372,16 +372,6 @@ export class DiagnosticsStore {
       renderStatusText: viewerSnapshot.renderStatusText,
       fpsEstimate: nextFpsEstimate,
     };
-    if (
-      settings.renderStatusText !== viewerSnapshot.renderStatusText ||
-      settings.fpsEstimate !== nextFpsEstimate
-    ) {
-      this.settingsStore.update({
-        renderStatusText: viewerSnapshot.renderStatusText,
-        fpsEstimate: nextFpsEstimate,
-      });
-    }
-
     this.emit();
   }
 
@@ -444,8 +434,8 @@ export class DiagnosticsStore {
       hearingEnhancementTelemetry,
       phoneMediaAudioTelemetry,
       statusText: settings.statusText,
-      renderStatusText: settings.renderStatusText,
-      fpsEstimate: settings.fpsEstimate,
+      renderStatusText: this.snapshot.renderStatusText,
+      fpsEstimate: this.snapshot.fpsEstimate,
     };
     this.emit();
   }

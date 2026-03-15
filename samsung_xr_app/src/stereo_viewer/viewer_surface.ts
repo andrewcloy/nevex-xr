@@ -175,10 +175,20 @@ export class PlaceholderViewerSurface implements ViewerSurface {
   setPresentationOptions(
     options: Partial<ViewerPresentationOptions>,
   ): void {
-    this.presentationOptions = {
+    const nextPresentationOptions = {
       ...this.presentationOptions,
       ...options,
     };
+    if (
+      areViewerPresentationOptionsEqual(
+        this.presentationOptions,
+        nextPresentationOptions,
+      )
+    ) {
+      return;
+    }
+
+    this.presentationOptions = nextPresentationOptions;
 
     this.snapshot = {
       ...this.snapshot,
@@ -409,4 +419,15 @@ function createSourceStatusText(
   }
 
   return `Source ${status.info.displayName} is idle.`;
+}
+
+function areViewerPresentationOptionsEqual(
+  left: ViewerPresentationOptions,
+  right: ViewerPresentationOptions,
+): boolean {
+  return (
+    left.brightness === right.brightness &&
+    left.overlayEnabled === right.overlayEnabled &&
+    left.thermalOverlayMode === right.thermalOverlayMode
+  );
 }

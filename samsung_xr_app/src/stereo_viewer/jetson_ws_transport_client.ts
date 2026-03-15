@@ -10,6 +10,7 @@ import {
 } from "./jetson_binary_stereo_frame_message";
 
 const MAX_RETAINED_BINARY_FRAME_URL_SETS = 2;
+const MIN_CONNECT_TIMEOUT_MS = 3000;
 
 /**
  * Browser-friendly WebSocket constructor used by the prototype transport.
@@ -49,11 +50,15 @@ export class JetsonWebSocketTransportClient {
 
   private reconnectTimer?: ReturnType<typeof setTimeout>;
 
+  private connectTimeoutTimer?: ReturnType<typeof setTimeout>;
+
   private manualDisconnect = false;
 
   private messageHandlingQueue: Promise<void> = Promise.resolve();
 
   private retainedBinaryFrameObjectUrls: string[][] = [];
+
+  private activeSessionId = 0;
 
   constructor(options: JetsonWebSocketTransportClientOptions) {
     this.dispatcher = options.dispatcher;
@@ -70,6 +75,7 @@ export class JetsonWebSocketTransportClient {
     this.activeConfig = config;
     this.manualDisconnect = false;
     this.clearReconnectTimer();
+    this.clearConnectTimeout();
 
     if (this.socket) {
       const readyState = this.socket.readyState;
@@ -130,12 +136,16 @@ export class JetsonWebSocketTransportClient {
 
     this.socket = socket;
     this.socket.binaryType = "arraybuffer";
+    this.messageHandlingQueue = Promise.resolve();
+    const sessionId = ++this.activeSessionId;
+    this.scheduleConnectTimeout(socket, sessionId, url);
 
     socket.addEventListener("open", () => {
-      if (this.socket !== socket) {
+      if (!this.isActiveSocket(socket, sessionId)) {
         return;
       }
 
+      this.clearConnectTimeout();
       this.onTransportStatus({
         transportState: "running",
         connected: true,
@@ -146,15 +156,19 @@ export class JetsonWebSocketTransportClient {
     });
 
     socket.addEventListener("message", (event) => {
-      if (this.socket !== socket) {
+      if (!this.isActiveSocket(socket, sessionId)) {
         return;
       }
 
       this.messageHandlingQueue = this.messageHandlingQueue
         .then(() => {
-          return this.handleMessage(event);
+          return this.handleMessage(socket, sessionId, event.data);
         })
         .catch((error) => {
+          if (!this.isActiveSocket(socket, sessionId)) {
+            return;
+          }
+
           this.onTransportError({
             stage: "parse",
             recoverable: true,
@@ -167,7 +181,7 @@ export class JetsonWebSocketTransportClient {
     });
 
     socket.addEventListener("error", () => {
-      if (this.socket !== socket) {
+      if (!this.isActiveSocket(socket, sessionId)) {
         return;
       }
 
@@ -179,10 +193,12 @@ export class JetsonWebSocketTransportClient {
     });
 
     socket.addEventListener("close", (event) => {
-      if (this.socket !== socket) {
+      if (!this.isActiveSocket(socket, sessionId)) {
         return;
       }
 
+      this.clearConnectTimeout();
+      this.revokeRetainedBinaryFrameObjectUrls();
       this.socket = undefined;
       const closeReason = event.reason || `Close code ${event.code}`;
 
@@ -219,6 +235,10 @@ export class JetsonWebSocketTransportClient {
   async disconnect(): Promise<void> {
     this.manualDisconnect = true;
     this.clearReconnectTimer();
+    this.clearConnectTimeout();
+    this.messageHandlingQueue = Promise.resolve();
+    this.activeSessionId += 1;
+    this.revokeRetainedBinaryFrameObjectUrls();
 
     const socket = this.socket;
     this.socket = undefined;
@@ -276,13 +296,25 @@ export class JetsonWebSocketTransportClient {
     this.socket.send(serializedMessage);
   }
 
-  private async handleMessage(event: MessageEvent): Promise<void> {
-    if (typeof event.data === "string") {
-      this.handleJsonMessage(event.data);
+  private async handleMessage(
+    socket: WebSocket,
+    sessionId: number,
+    rawData: unknown,
+  ): Promise<void> {
+    if (!this.isActiveSocket(socket, sessionId)) {
       return;
     }
 
-    const binaryBytes = await this.normalizeBinaryMessageData(event.data);
+    if (typeof rawData === "string") {
+      this.handleJsonMessage(socket, sessionId, rawData);
+      return;
+    }
+
+    const binaryBytes = await this.normalizeBinaryMessageData(rawData);
+    if (!this.isActiveSocket(socket, sessionId)) {
+      return;
+    }
+
     if (!binaryBytes) {
       this.onTransportError({
         stage: "parse",
@@ -293,10 +325,18 @@ export class JetsonWebSocketTransportClient {
       return;
     }
 
-    this.handleBinaryMessage(binaryBytes);
+    this.handleBinaryMessage(socket, sessionId, binaryBytes);
   }
 
-  private handleJsonMessage(rawMessage: string): void {
+  private handleJsonMessage(
+    socket: WebSocket,
+    sessionId: number,
+    rawMessage: string,
+  ): void {
+    if (!this.isActiveSocket(socket, sessionId)) {
+      return;
+    }
+
     const messageSizeBytes = measureUtf8ByteSize(rawMessage);
     const maxMessageBytes = this.activeConfig?.maxMessageBytes ?? 0;
     if (maxMessageBytes > 0 && messageSizeBytes > maxMessageBytes) {
@@ -328,7 +368,11 @@ export class JetsonWebSocketTransportClient {
     void result;
   }
 
-  private handleBinaryMessage(binaryBytes: ArrayBuffer | Uint8Array): void {
+  private handleBinaryMessage(
+    socket: WebSocket,
+    sessionId: number,
+    binaryBytes: ArrayBuffer | Uint8Array,
+  ): void {
     let decodedMessage;
     try {
       decodedMessage = decodeJetsonBinaryStereoFrameMessage(binaryBytes, {
@@ -342,6 +386,11 @@ export class JetsonWebSocketTransportClient {
         recoverable: true,
         message: error instanceof Error ? error.message : "Invalid binary frame.",
       });
+      return;
+    }
+
+    if (!this.isActiveSocket(socket, sessionId)) {
+      revokeJetsonBinaryStereoFrameObjectUrls(decodedMessage.objectUrls);
       return;
     }
 
@@ -365,6 +414,36 @@ export class JetsonWebSocketTransportClient {
         revokeJetsonBinaryStereoFrameObjectUrls(retiredObjectUrls);
       }
     }
+  }
+
+  private scheduleConnectTimeout(
+    socket: WebSocket,
+    sessionId: number,
+    url: string,
+  ): void {
+    this.clearConnectTimeout();
+    const timeoutMs = Math.max(
+      MIN_CONNECT_TIMEOUT_MS,
+      (this.activeConfig?.reconnectIntervalMs ?? MIN_CONNECT_TIMEOUT_MS) * 2,
+    );
+
+    this.connectTimeoutTimer = setTimeout(() => {
+      if (!this.isActiveSocket(socket, sessionId)) {
+        return;
+      }
+
+      this.onTransportError({
+        stage: "transport",
+        recoverable: Boolean(this.activeConfig?.reconnectEnabled),
+        message: `WebSocket transport timed out connecting to ${url}.`,
+      });
+
+      try {
+        socket.close(4000, "Connect timeout");
+      } catch {
+        // Ignore transport cleanup failures during timeout handling.
+      }
+    }, timeoutMs);
   }
 
   private async normalizeBinaryMessageData(
@@ -402,6 +481,26 @@ export class JetsonWebSocketTransportClient {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = undefined;
     }
+  }
+
+  private clearConnectTimeout(): void {
+    if (this.connectTimeoutTimer) {
+      clearTimeout(this.connectTimeoutTimer);
+      this.connectTimeoutTimer = undefined;
+    }
+  }
+
+  private revokeRetainedBinaryFrameObjectUrls(): void {
+    while (this.retainedBinaryFrameObjectUrls.length > 0) {
+      const objectUrls = this.retainedBinaryFrameObjectUrls.shift();
+      if (objectUrls) {
+        revokeJetsonBinaryStereoFrameObjectUrls(objectUrls);
+      }
+    }
+  }
+
+  private isActiveSocket(socket: WebSocket, sessionId: number): boolean {
+    return this.socket === socket && this.activeSessionId === sessionId;
   }
 }
 
