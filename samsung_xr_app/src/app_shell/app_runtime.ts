@@ -585,7 +585,6 @@ export class AppRuntime {
     this.settingsStore.update({
       liveTransportAdapterType: status.adapterType,
       liveTransportAdapterDisplayName: status.adapterDisplayName,
-      liveTransportConfig: status.config,
       liveTransportStatusState: status.state,
       liveTransportConnected: status.connected,
       liveTransportStatusText: status.statusText,
@@ -891,7 +890,9 @@ export class AppRuntime {
       this.viewerSurface.detachFrameSource();
     }
 
-    if (liveTransportAdapter) {
+    // Keep Jetson WebSocket manual-connect so operators can edit/apply transport
+    // settings before the browser starts dialing the live sender endpoint.
+    if (liveTransportAdapter && liveTransportAdapter.adapterType !== "jetson_stub") {
       await liveTransportAdapter.start();
     }
   }
