@@ -15,7 +15,7 @@ npm run mock:jetson
 
 Defaults:
 
-- WebSocket URL: `ws://127.0.0.1:8080/jetson/messages`
+- WebSocket URL: `ws://127.0.0.1:8090/jetson/messages`
 - Stream name: `jetson_mock_stream`
 - Frame interval: `1200 ms`
 
@@ -44,7 +44,7 @@ npm run dev
 
 1. Open the Vite app in the browser.
 2. Switch `Source mode` to `Live`.
-3. Switch the live adapter to `Jetson Stub`.
+3. Switch the live adapter to `Jetson WebSocket Transport Adapter`.
 4. Confirm the transport host, port, and path match the mock server.
 5. Click `Apply Transport Config` if you changed the endpoint.
 6. Click `Connect WebSocket`.

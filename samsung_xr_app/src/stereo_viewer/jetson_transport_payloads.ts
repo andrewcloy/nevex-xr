@@ -1085,27 +1085,27 @@ function createDefaultTransportStatusText(
 ): string {
   if (state === "running") {
     return connected
-      ? "Jetson transport stub receiving external ingress."
-      : "Jetson transport stub running without confirmed link.";
+      ? "Jetson WebSocket transport receiving external ingress."
+      : "Jetson WebSocket transport running without confirmed link.";
   }
 
   if (state === "connecting" || state === "reconnecting") {
-    return "Jetson transport stub waiting for remote ingress status.";
+    return "Jetson WebSocket transport waiting for remote ingress status.";
   }
 
   if (state === "starting") {
-    return "Jetson transport stub starting.";
+    return "Jetson WebSocket transport starting.";
   }
 
   if (state === "stopped") {
-    return "Jetson transport stub stopped.";
+    return "Jetson WebSocket transport stopped.";
   }
 
   if (state === "error") {
-    return "Jetson transport stub entered an error state.";
+    return "Jetson WebSocket transport entered an error state.";
   }
 
-  return "Jetson transport stub idle.";
+  return "Jetson WebSocket transport idle.";
 }
 
 function requireFiniteNumber(value: number, fieldName: string): number {

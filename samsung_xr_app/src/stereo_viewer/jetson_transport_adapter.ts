@@ -63,7 +63,7 @@ export interface JetsonTransportIngress {
 }
 
 /**
- * Options for constructing the Jetson transport stub.
+ * Options for constructing the Jetson WebSocket transport adapter.
  */
 export interface JetsonTransportAdapterOptions {
   readonly config?: Partial<LiveTransportConfig>;
@@ -71,7 +71,7 @@ export interface JetsonTransportAdapterOptions {
 }
 
 /**
- * First protocol-facing live adapter stub for future Jetson integration.
+ * Protocol-facing live adapter for Jetson WebSocket ingress.
  *
  * This class owns transport lifecycle state and external-ingress mapping while
  * using a push-based stereo frame source underneath to feed the viewer path.
@@ -88,7 +88,7 @@ export class JetsonTransportAdapter
 
   readonly adapterType = "jetson_stub" as const;
 
-  readonly displayName = "Jetson Transport Adapter Stub";
+  readonly displayName = "Jetson WebSocket Transport Adapter";
 
   readonly frameSource: PushStereoFrameSource;
 
@@ -111,16 +111,16 @@ export class JetsonTransportAdapter
   constructor(options: JetsonTransportAdapterOptions = {}) {
     this.config = normalizeLiveTransportConfig({
       ...DEFAULT_LIVE_TRANSPORT_CONFIG,
-      port: 8080,
+      port: 8090,
       path: "/jetson/messages",
       protocolType: "websocket_json",
-      streamName: "jetson_stub",
+      streamName: "jetson_sender_prototype_stream",
       ...options.config,
     });
 
     this.frameSource = new PushStereoFrameSource({
       id: "jetson-stub-frame-source",
-      displayName: "Jetson Stub Frame Source",
+      displayName: "Jetson Live Frame Source",
       sourceKind: "live",
     });
 
@@ -129,7 +129,7 @@ export class JetsonTransportAdapter
       adapterDisplayName: this.displayName,
       state: "idle",
       connected: false,
-      statusText: "Jetson transport stub idle.",
+      statusText: "Jetson WebSocket transport idle.",
       sequenceHealth: DEFAULT_LIVE_TRANSPORT_SEQUENCE_HEALTH,
       config: this.config,
     };
@@ -199,10 +199,10 @@ export class JetsonTransportAdapter
       config: this.config,
       statusText:
         requiresReconnect
-          ? `Jetson transport stub configuration updated. Reconnect to apply ${buildJetsonWebSocketUrl(
+          ? `Jetson WebSocket transport configuration updated. Reconnect to apply ${buildJetsonWebSocketUrl(
               this.config,
             )}.`
-          : `Jetson transport stub configured for ${buildJetsonWebSocketUrl(this.config)}.`,
+          : `Jetson WebSocket transport configured for ${buildJetsonWebSocketUrl(this.config)}.`,
     });
 
     return this.config;
@@ -223,7 +223,7 @@ export class JetsonTransportAdapter
     this.updateStatus({
       state: "starting",
       connected: false,
-      statusText: "Starting Jetson transport stub...",
+      statusText: "Starting Jetson WebSocket transport...",
       lastError: undefined,
       lastParseError: undefined,
       lastMessageType: undefined,
@@ -249,7 +249,7 @@ export class JetsonTransportAdapter
     this.updateStatus({
       state: "stopped",
       connected: false,
-      statusText: "Jetson transport stub stopped.",
+      statusText: "Jetson WebSocket transport stopped.",
     });
   }
 
@@ -270,7 +270,7 @@ export class JetsonTransportAdapter
       this.updateStatus({
         state: "running",
         connected: this.status.connected,
-        statusText: `Jetson transport stub mapped frame #${frame.frameId}.`,
+        statusText: `Jetson WebSocket transport mapped frame #${frame.frameId}.`,
         lastError: undefined,
         lastParseError: undefined,
       });
@@ -355,7 +355,7 @@ export class JetsonTransportAdapter
       buildTransportStatusEnvelope(
         {
           transportState: "running",
-          statusText: "Jetson transport stub ingesting a sample envelope.",
+          statusText: "Jetson WebSocket transport ingesting a sample envelope.",
         },
         {
           sequence: this.nextEnvelopeSequence(),

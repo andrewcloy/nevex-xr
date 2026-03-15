@@ -158,6 +158,7 @@ export interface DiagnosticsPanelSnapshot {
   readonly transportParseErrorText?: string;
   readonly transportLastMessageTypeText: string;
   readonly transportLastSequenceText: string;
+  readonly transportLastMessageTimestampText: string;
   readonly cameraTelemetry?: DiagnosticsPanelCameraTelemetrySnapshot;
   readonly thermalTelemetry: DiagnosticsPanelThermalTelemetrySnapshot;
   readonly irIlluminatorTelemetry: DiagnosticsPanelIrIlluminatorSnapshot;
@@ -567,6 +568,10 @@ export class DiagnosticsPanelController {
         typeof diagnostics.transportLastSequence === "number"
           ? `#${diagnostics.transportLastSequence}`
           : "Pending",
+      transportLastMessageTimestampText:
+        typeof diagnostics.transportLastMessageTimestampMs === "number"
+          ? new Date(diagnostics.transportLastMessageTimestampMs).toLocaleTimeString()
+          : "Pending",
       cameraTelemetry,
       thermalTelemetry,
       irIlluminatorTelemetry,
@@ -620,6 +625,11 @@ export class DiagnosticsPanelController {
           typeof diagnostics.transportLastSequence === "number"
             ? `#${diagnostics.transportLastSequence}`
             : "none"
+        }`,
+        `Last message time: ${
+          typeof diagnostics.transportLastMessageTimestampMs === "number"
+            ? new Date(diagnostics.transportLastMessageTimestampMs).toLocaleTimeString()
+            : "Pending"
         }`,
         `Sequence health: ${formatSequenceHealth(
           diagnostics.transportSequenceHealth,

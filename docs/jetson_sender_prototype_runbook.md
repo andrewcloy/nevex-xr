@@ -34,7 +34,7 @@ state through `capabilities`, `source_status`, and additive `stereo_frame`
 thermal payloads.
 
 The current implementation runs as a WebSocket server so it stays compatible
-with the existing browser `Jetson Stub` flow.
+with the existing browser Jetson WebSocket transport flow.
 
 ## Default Local Images
 
@@ -224,7 +224,7 @@ What this adds on top of the normal simulated camera path:
 
 #### Live browser-to-sender control rehearsal
 
-When the browser is connected to the Jetson Stub WebSocket transport, the
+When the browser is connected to the Jetson WebSocket transport, the
 thermal/IR controls now send live outbound `settings_patch` messages over that
 same socket.
 
@@ -758,7 +758,7 @@ For the full Jetson hardware bring-up checklist, see
 Change endpoint, FPS, sender metadata, and provider:
 
 ```powershell
-node ./scripts/jetson_sender_prototype.mjs `
+node ./scripts/jetson_sender_runtime.mjs `
   --provider generated `
   --host 127.0.0.1 `
   --port 8090 `
@@ -774,7 +774,7 @@ node ./scripts/jetson_sender_prototype.mjs `
 In the browser app:
 
 1. Switch `Source mode` to `Live`.
-2. Select the `Jetson Stub` live adapter.
+2. Select the `Jetson WebSocket Transport Adapter`.
 3. Set the transport host to `127.0.0.1`.
 4. Set the transport port to `8090` unless you changed it.
 5. Set the transport path to `/jetson/messages` unless you changed it.
@@ -782,6 +782,61 @@ In the browser app:
 7. Click `Connect WebSocket`.
 8. Use the thermal mode selector, IR toggle, and IR level slider in the main
    browser status panel.
+
+## First Live Bring-Up
+
+On the Jetson host, launch the canonical sender runtime from
+`NEVEX_XR/samsung_xr_app`:
+
+```bash
+node ./scripts/jetson_sender_runtime.mjs \
+  --provider camera \
+  --capture-backend jetson \
+  --jetson-preview-enabled true \
+  --image-mode binary_frame \
+  --health-log \
+  --health-log-interval-ms 3000
+```
+
+If you want a software-only rehearsal from the same runtime path before touching
+real capture, use:
+
+```bash
+node ./scripts/jetson_sender_runtime.mjs \
+  --provider camera \
+  --capture-backend simulated \
+  --image-mode binary_frame \
+  --health-log \
+  --health-log-interval-ms 3000
+```
+
+On the XR app host, launch the app from `NEVEX_XR/samsung_xr_app`:
+
+```bash
+npm run dev
+```
+
+Then in the UI:
+
+1. Switch `Source mode` to `Live`.
+2. Select `Jetson WebSocket Transport Adapter`.
+3. Set `Host` to the Jetson sender host or tunnel endpoint.
+4. Set `Port` to `8090` unless you changed it on the sender.
+5. Set `Path` to `/jetson/messages`.
+6. Click `Apply Transport Config`.
+7. Click `Connect WebSocket`.
+
+For first live validation, watch these readouts first:
+
+- `Transport connection`
+- `Transport status`
+- `Last message type`
+- `Last message time`
+- `Source health`
+- `Last frame`
+- `Jetson runtime status`
+- `Jetson profile`
+- `Jetson preflight`
 
 ## What To Expect
 

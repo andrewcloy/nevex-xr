@@ -141,6 +141,7 @@ export interface StatusPanelSnapshot {
   readonly transportStereoFormatNoteText?: string;
   readonly transportLastMessageTypeText: string;
   readonly transportLastSequenceText: string;
+  readonly transportLastMessageTimestampText: string;
   readonly liveTransportDemoFeedActive: boolean;
   readonly jetsonControlModeText: string;
   readonly jetsonOperatorControlsAvailable: boolean;
@@ -219,6 +220,10 @@ export class StatusPanelController {
     const transportLastSequenceText =
       typeof diagnostics.transportLastSequence === "number"
         ? `#${diagnostics.transportLastSequence}`
+        : "Pending";
+    const transportLastMessageTimestampText =
+      typeof diagnostics.transportLastMessageTimestampMs === "number"
+        ? new Date(diagnostics.transportLastMessageTimestampMs).toLocaleTimeString()
         : "Pending";
     const transportCapabilitiesText = diagnostics.transportCapabilities
       ? `${diagnostics.transportCapabilities.senderName}${
@@ -501,6 +506,7 @@ export class StatusPanelController {
       transportStereoFormatNoteText: diagnostics.transportCapabilities?.stereoFormatNote,
       transportLastMessageTypeText,
       transportLastSequenceText,
+      transportLastMessageTimestampText,
       liveTransportDemoFeedActive: settings.liveTransportDemoFeedActive,
       jetsonControlModeText,
       jetsonOperatorControlsAvailable: jetsonOperatorControlState.available,
@@ -577,6 +583,7 @@ export class StatusPanelController {
         `Image modes: ${transportImageModesText}`,
         `Last message type: ${transportLastMessageTypeText}`,
         `Last sequence: ${transportLastSequenceText}`,
+        `Last message time: ${transportLastMessageTimestampText}`,
         `Sequence health: ${formatSequenceHealth(diagnostics.transportSequenceHealth)}`,
         `Last message size: ${formatByteSize(diagnostics.transportLastMessageSizeBytes)}`,
         `Payload limits: ${formatByteSize(

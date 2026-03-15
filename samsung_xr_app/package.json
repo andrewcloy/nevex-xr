@@ -15,7 +15,7 @@
     "sender:preflight": "node ./scripts/jetson_sender_preflight.mjs",
     "test:protocol": "vitest run ./src/stereo_viewer/jetson_protocol.fixtures.test.ts",
     "test:sender": "vitest run ./scripts/sender/capture_backends/gstreamer_stereo_capture_backend.test.mjs ./scripts/sender/capture_backends/jetson_runtime_capture_backend.test.mjs ./scripts/sender/capture_backends/simulated_stereo_capture_backend.test.mjs ./scripts/sender/capture_backends/replay_stereo_capture_backend.test.mjs ./scripts/sender/capture_backends/replay_manifest_validator.test.mjs ./scripts/sender/capture_backends/replay_timing_support.test.mjs ./scripts/sender/audio/audio_subsystems.test.mjs ./scripts/sender/sender_runtime.test.mjs ./scripts/sender/simulated_camera_runtime.test.mjs ./scripts/sender/replay_camera_runtime.test.mjs ./scripts/jetson_sender_preflight.test.mjs",
-    "test:browser": "vitest run ./src/stereo_viewer/audio_models.test.ts ./src/stereo_viewer/jetson_transport_adapter.test.ts ./src/settings_state/settings_store.test.ts ./src/diagnostics/diagnostics_store.test.ts ./src/control_client/live_transport_control_client.test.ts ./src/ui/status_panel.test.ts ./src/ui/diagnostics_panel.test.ts ./src/ui/ui_audio.test.ts"
+    "test:browser": "vitest run ./src/stereo_viewer/audio_models.test.ts ./src/stereo_viewer/jetson_transport_adapter.test.ts ./src/stereo_viewer/jetson_sender_runtime_end_to_end.test.ts ./src/settings_state/settings_store.test.ts ./src/diagnostics/diagnostics_store.test.ts ./src/control_client/live_transport_control_client.test.ts ./src/ui/status_panel.test.ts ./src/ui/diagnostics_panel.test.ts ./src/ui/ui_audio.test.ts"
   },
   "keywords": [],
   "author": "",

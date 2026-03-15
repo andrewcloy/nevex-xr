@@ -21,6 +21,20 @@ import {
 import { PlaceholderViewerSurface } from "./viewer_surface";
 
 describe("JetsonTransportAdapter", () => {
+  it("defaults to the canonical sender runtime websocket endpoint", () => {
+    const adapter = new JetsonTransportAdapter();
+
+    expect(adapter.getConfig().host).toBe("127.0.0.1");
+    expect(adapter.getConfig().port).toBe(8090);
+    expect(adapter.getConfig().path).toBe("/jetson/messages");
+    expect(adapter.getConfig().streamName).toBe(
+      "jetson_sender_prototype_stream",
+    );
+    expect(adapter.getStatus().adapterDisplayName).toBe(
+      "Jetson WebSocket Transport Adapter",
+    );
+  });
+
   it("feeds richer runtime telemetry through to XR status and diagnostics snapshots", async () => {
     const settingsStore = new SettingsStore({
       sourceMode: "live",
@@ -31,7 +45,7 @@ describe("JetsonTransportAdapter", () => {
     const adapter = new JetsonTransportAdapter({
       config: {
         host: "127.0.0.1",
-        port: 8080,
+        port: 8090,
         path: "/jetson/messages",
         streamName: "jetson_visible_camera",
       },
@@ -179,6 +193,9 @@ describe("JetsonTransportAdapter", () => {
       "camera read failed after 2 attempt(s)",
     );
     expect(statusSnapshot.runtimeOperationText).toBe("Fallback to simulated");
+    expect(statusSnapshot.transportLastMessageTimestampText).toBe(
+      new Date(1003).toLocaleTimeString(),
+    );
 
     expect(diagnosticsSnapshot.senderNameText).toBe("jetson_app_xr_bridge");
     expect(diagnosticsSnapshot.sourceStreamNameText).toBe(
@@ -225,6 +242,9 @@ describe("JetsonTransportAdapter", () => {
     expect(diagnosticsSnapshot.cameraTelemetry?.fallbackStateText).toBe("Active");
     expect(diagnosticsSnapshot.cameraTelemetry?.fallbackReasonText).toContain(
       "camera read failed after 2 attempt(s)",
+    );
+    expect(diagnosticsSnapshot.transportLastMessageTimestampText).toBe(
+      new Date(1003).toLocaleTimeString(),
     );
 
     transportUnsubscribe();

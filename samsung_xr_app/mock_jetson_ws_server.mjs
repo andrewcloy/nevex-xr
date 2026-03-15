@@ -7,7 +7,7 @@ import {
   createJetsonCapabilitiesPayload,
 } from "./jetson_sender_helpers.mjs";
 
-const port = parseInteger(process.env.JETSON_WS_PORT, 8080);
+const port = parseInteger(process.env.JETSON_WS_PORT, 8090);
 const path = process.env.JETSON_WS_PATH ?? "/jetson/messages";
 const frameIntervalMs = parseInteger(process.env.JETSON_FRAME_INTERVAL_MS, 1200);
 const streamName = process.env.JETSON_STREAM_NAME ?? "jetson_mock_stream";

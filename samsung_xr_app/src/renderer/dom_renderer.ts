@@ -599,6 +599,12 @@ export class DomRendererAdapter {
                           )}</strong>
                         </div>
                         <div class="status-row">
+                          <span>Last message time</span>
+                          <strong>${escapeHtml(
+                            scene.statusPanel.panel.transportLastMessageTimestampText,
+                          )}</strong>
+                        </div>
+                        <div class="status-row">
                           <span>Sequence health</span>
                           <strong>${escapeHtml(
                             scene.statusPanel.panel.transportSequenceHealthText,
@@ -1550,6 +1556,12 @@ export class DomRendererAdapter {
                   <span>Last sequence</span>
                   <strong>${escapeHtml(
                     scene.diagnosticsPanel.panel.transportLastSequenceText,
+                  )}</strong>
+                </div>
+                <div class="status-row">
+                  <span>Last message time</span>
+                  <strong>${escapeHtml(
+                    scene.diagnosticsPanel.panel.transportLastMessageTimestampText,
                   )}</strong>
                 </div>
                 <div class="status-row">
