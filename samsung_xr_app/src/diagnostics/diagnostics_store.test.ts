@@ -234,6 +234,62 @@ describe("DiagnosticsStore", () => {
     diagnosticsStore.dispose();
   });
 
+  it("keeps render and fps diagnostics local across unrelated settings changes", () => {
+    const settingsStore = new SettingsStore({
+      sourceMode: "live",
+    });
+    const diagnosticsStore = new DiagnosticsStore(settingsStore);
+    const firstTimestampMs = Date.now();
+    const secondTimestampMs = firstTimestampMs + 100;
+
+    diagnosticsStore.recordViewerSnapshot({
+      ...createViewerSnapshot({
+        sourceState: "running",
+        captureHealthState: "healthy",
+        telemetryReceivedAtMs: firstTimestampMs,
+      }),
+      renderStatusText: "Rendering live stereo frame #1",
+      currentFrame: {
+        frameId: 1,
+        timestampMs: firstTimestampMs,
+        source: "live",
+        left: createFrameEye("left"),
+        right: createFrameEye("right"),
+      },
+    });
+    diagnosticsStore.recordViewerSnapshot({
+      ...createViewerSnapshot({
+        sourceState: "running",
+        captureHealthState: "healthy",
+        telemetryReceivedAtMs: secondTimestampMs,
+      }),
+      renderStatusText: "Rendering live stereo frame #2",
+      currentFrame: {
+        frameId: 2,
+        timestampMs: secondTimestampMs,
+        source: "live",
+        left: createFrameEye("left"),
+        right: createFrameEye("right"),
+      },
+    });
+
+    expect(diagnosticsStore.getSnapshot().renderStatusText).toBe(
+      "Rendering live stereo frame #2",
+    );
+    expect(diagnosticsStore.getSnapshot().fpsEstimate).toBe(10);
+    expect(settingsStore.getSnapshot().renderStatusText).toBe("Viewer idle");
+    expect(settingsStore.getSnapshot().fpsEstimate).toBe(0);
+
+    settingsStore.setStatusText("Operator control updated.");
+
+    expect(diagnosticsStore.getSnapshot().renderStatusText).toBe(
+      "Rendering live stereo frame #2",
+    );
+    expect(diagnosticsStore.getSnapshot().fpsEstimate).toBe(10);
+
+    diagnosticsStore.dispose();
+  });
+
   it("defaults optional subsystem telemetry to unavailable when hardware is absent", () => {
     const settingsStore = new SettingsStore({
       sourceMode: "live",

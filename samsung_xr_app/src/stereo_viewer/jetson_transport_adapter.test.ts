@@ -27,12 +27,80 @@ describe("JetsonTransportAdapter", () => {
     expect(adapter.getConfig().host).toBe("127.0.0.1");
     expect(adapter.getConfig().port).toBe(8090);
     expect(adapter.getConfig().path).toBe("/jetson/messages");
-    expect(adapter.getConfig().streamName).toBe(
-      "jetson_sender_prototype_stream",
-    );
+    expect(adapter.getConfig().streamName).toBe("jetson_sender_runtime_stream");
     expect(adapter.getStatus().adapterDisplayName).toBe(
       "Jetson WebSocket Transport Adapter",
     );
+  });
+
+  it("clears stale session state when the transport reconnects", () => {
+    const adapter = new JetsonTransportAdapter();
+    const dispatcher = new JetsonMessageDispatcher(adapter);
+
+    dispatcher.dispatchMessageObject(
+      buildCapabilitiesEnvelope(
+        createSampleJetsonCapabilitiesPayload(
+          "jetson_sender_runtime",
+          "jetson_sender_runtime_stream",
+        ),
+        {
+          timestampMs: 1000,
+          sequence: 1,
+        },
+      ),
+    );
+    dispatcher.dispatchMessageObject(
+      buildSourceStatusEnvelope(
+        {
+          sourceState: "running",
+          lastFrameId: 7,
+          lastTimestampMs: 1002,
+          statusText: "Preview live.",
+        },
+        {
+          timestampMs: 1002,
+          sequence: 2,
+        },
+      ),
+    );
+    dispatcher.dispatchMessageObject(
+      buildStereoFrameEnvelope(
+        createSampleJetsonStereoFramePayload(7, "jetson_sender_runtime_stream"),
+        {
+          timestampMs: 1003,
+          sequence: 3,
+        },
+      ),
+    );
+
+    expect(adapter.getStatus().lastMessageType).toBe("stereo_frame");
+    expect(adapter.getStatus().capabilities?.senderName).toBe(
+      "jetson_sender_runtime",
+    );
+    expect(adapter.frameSource.getStatus().lastFrameId).toBe(7);
+
+    adapter.ingestTransportStatusPayload({
+      transportState: "reconnecting",
+      connected: false,
+      statusText: "WebSocket transport disconnected. Retrying soon...",
+    });
+
+    expect(adapter.getStatus().lastMessageType).toBeUndefined();
+    expect(adapter.getStatus().lastSequence).toBeUndefined();
+    expect(adapter.getStatus().capabilities).toBeUndefined();
+    expect(adapter.frameSource.getStatus().state).toBe("reconnecting");
+    expect(adapter.frameSource.getStatus().lastFrameId).toBeUndefined();
+    expect(adapter.frameSource.getStatus().cameraTelemetry).toBeUndefined();
+
+    adapter.ingestTransportStatusPayload({
+      transportState: "running",
+      connected: true,
+      statusText: "WebSocket transport connected to ws://127.0.0.1:8090/jetson/messages.",
+    });
+
+    expect(adapter.getStatus().capabilities).toBeUndefined();
+    expect(adapter.frameSource.getStatus().state).toBe("idle");
+    expect(adapter.frameSource.getStatus().lastFrameId).toBeUndefined();
   });
 
   it("feeds richer runtime telemetry through to XR status and diagnostics snapshots", async () => {

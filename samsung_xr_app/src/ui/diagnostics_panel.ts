@@ -797,6 +797,7 @@ function formatSequenceHealth(snapshot: {
   readonly repeatedCount: number;
   readonly outOfOrderCount: number;
   readonly droppedCountEstimate: number;
+  readonly lastAnomalyText?: string;
 }): string {
   if (
     snapshot.repeatedCount === 0 &&
@@ -806,7 +807,12 @@ function formatSequenceHealth(snapshot: {
     return "Healthy";
   }
 
-  return `Repeated ${snapshot.repeatedCount}, out-of-order ${snapshot.outOfOrderCount}, dropped est ${snapshot.droppedCountEstimate}`;
+  return [
+    `Repeated ${snapshot.repeatedCount}, out-of-order ${snapshot.outOfOrderCount}, dropped est ${snapshot.droppedCountEstimate}`,
+    snapshot.lastAnomalyText ? `last anomaly: ${snapshot.lastAnomalyText}` : undefined,
+  ]
+    .filter((part): part is string => typeof part === "string")
+    .join(" | ");
 }
 
 function formatRuntimeSourceModeText(

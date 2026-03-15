@@ -58,6 +58,8 @@ export interface AppRuntimeSnapshot {
  */
 export type AppRuntimeListener = (snapshot: AppRuntimeSnapshot) => void;
 
+const LIVE_TRANSPORT_STATUS_SYNC_INTERVAL_MS = 120;
+
 /**
  * Dependencies required to boot the app scaffold.
  *
@@ -114,6 +116,12 @@ export class AppRuntime {
   private liveTransportStatusUnsubscribe?: Unsubscribe;
 
   private settingsChangeUnsubscribe?: Unsubscribe;
+
+  private liveTransportStatusSyncTimer?: ReturnType<typeof setTimeout>;
+
+  private pendingLiveTransportStatus?: LiveTransportStatusSnapshot;
+
+  private lastAppliedLiveTransportStatus?: LiveTransportStatusSnapshot;
 
   private lastSettingsSnapshot: XrAppSettingsState;
 
@@ -194,6 +202,9 @@ export class AppRuntime {
     this.controlConnectionUnsubscribe = undefined;
     this.liveTransportStatusUnsubscribe?.();
     this.liveTransportStatusUnsubscribe = undefined;
+    this.clearLiveTransportStatusSyncTimer();
+    this.pendingLiveTransportStatus = undefined;
+    this.lastAppliedLiveTransportStatus = undefined;
     this.settingsChangeUnsubscribe?.();
     this.settingsChangeUnsubscribe = undefined;
     await this.controlClient.disconnect();
@@ -450,6 +461,9 @@ export class AppRuntime {
 
   private registerLiveTransportStatusListener(): void {
     this.liveTransportStatusUnsubscribe?.();
+    this.clearLiveTransportStatusSyncTimer();
+    this.pendingLiveTransportStatus = undefined;
+    this.lastAppliedLiveTransportStatus = undefined;
 
     const liveTransportAdapter = this.getSelectedLiveTransportAdapter();
     if (!liveTransportAdapter) {
@@ -461,12 +475,11 @@ export class AppRuntime {
       liveTransportAdapterDisplayName: liveTransportAdapter.displayName,
       liveTransportConfig: liveTransportAdapter.getConfig(),
     });
-    this.handleLiveTransportStatus(liveTransportAdapter.getStatus());
     this.syncLiveTransportDebugState(liveTransportAdapter);
 
     this.liveTransportStatusUnsubscribe = liveTransportAdapter.subscribeStatus(
       (status) => {
-        this.handleLiveTransportStatus(status);
+        this.queueLiveTransportStatus(status);
       },
     );
   }
@@ -531,9 +544,44 @@ export class AppRuntime {
     });
   }
 
-  private handleLiveTransportStatus(
+  private queueLiveTransportStatus(status: LiveTransportStatusSnapshot): void {
+    const previousStatus =
+      this.pendingLiveTransportStatus ?? this.lastAppliedLiveTransportStatus;
+    if (
+      previousStatus &&
+      areLiveTransportStatusSnapshotsEquivalent(previousStatus, status)
+    ) {
+      return;
+    }
+
+    if (shouldApplyLiveTransportStatusImmediately(previousStatus, status)) {
+      this.pendingLiveTransportStatus = undefined;
+      this.clearLiveTransportStatusSyncTimer();
+      this.applyLiveTransportStatus(status);
+      return;
+    }
+
+    this.pendingLiveTransportStatus = status;
+    if (this.liveTransportStatusSyncTimer) {
+      return;
+    }
+
+    this.liveTransportStatusSyncTimer = setTimeout(() => {
+      this.liveTransportStatusSyncTimer = undefined;
+      const pendingStatus = this.pendingLiveTransportStatus;
+      this.pendingLiveTransportStatus = undefined;
+      if (!pendingStatus) {
+        return;
+      }
+
+      this.applyLiveTransportStatus(pendingStatus);
+    }, LIVE_TRANSPORT_STATUS_SYNC_INTERVAL_MS);
+  }
+
+  private applyLiveTransportStatus(
     status: LiveTransportStatusSnapshot,
   ): void {
+    this.lastAppliedLiveTransportStatus = status;
     this.settingsStore.update({
       liveTransportAdapterType: status.adapterType,
       liveTransportAdapterDisplayName: status.adapterDisplayName,
@@ -561,6 +609,13 @@ export class AppRuntime {
           ? status.lastError ?? status.lastParseError
           : undefined,
     });
+  }
+
+  private clearLiveTransportStatusSyncTimer(): void {
+    if (this.liveTransportStatusSyncTimer) {
+      clearTimeout(this.liveTransportStatusSyncTimer);
+      this.liveTransportStatusSyncTimer = undefined;
+    }
   }
 
   private handleSettingsSnapshot(snapshot: XrAppSettingsState): void {
@@ -953,4 +1008,73 @@ function createInitialRuntimeControlPatch(
     irEnabled: snapshot.irEnabled,
     irLevel: snapshot.irLevel,
   };
+}
+
+function areLiveTransportStatusSnapshotsEquivalent(
+  left: LiveTransportStatusSnapshot,
+  right: LiveTransportStatusSnapshot,
+): boolean {
+  return (
+    left.adapterType === right.adapterType &&
+    left.adapterDisplayName === right.adapterDisplayName &&
+    left.state === right.state &&
+    left.connected === right.connected &&
+    left.statusText === right.statusText &&
+    left.lastError === right.lastError &&
+    left.lastParseError === right.lastParseError &&
+    left.lastMessageType === right.lastMessageType &&
+    left.lastSequence === right.lastSequence &&
+    left.lastMessageTimestampMs === right.lastMessageTimestampMs &&
+    left.lastMessageSizeBytes === right.lastMessageSizeBytes &&
+    areLiveTransportSequenceHealthEquivalent(
+      left.sequenceHealth,
+      right.sequenceHealth,
+    ) &&
+    left.capabilities === right.capabilities &&
+    left.config === right.config
+  );
+}
+
+function areLiveTransportSequenceHealthEquivalent(
+  left: LiveTransportStatusSnapshot["sequenceHealth"],
+  right: LiveTransportStatusSnapshot["sequenceHealth"],
+): boolean {
+  return (
+    left.repeatedCount === right.repeatedCount &&
+    left.outOfOrderCount === right.outOfOrderCount &&
+    left.droppedCountEstimate === right.droppedCountEstimate &&
+    left.lastAnomalyText === right.lastAnomalyText
+  );
+}
+
+function shouldApplyLiveTransportStatusImmediately(
+  previous: LiveTransportStatusSnapshot | undefined,
+  next: LiveTransportStatusSnapshot,
+): boolean {
+  if (!previous) {
+    return true;
+  }
+
+  if (
+    previous.adapterType !== next.adapterType ||
+    previous.adapterDisplayName !== next.adapterDisplayName ||
+    previous.state !== next.state ||
+    previous.connected !== next.connected ||
+    previous.statusText !== next.statusText ||
+    previous.lastError !== next.lastError ||
+    previous.lastParseError !== next.lastParseError ||
+    previous.capabilities !== next.capabilities ||
+    previous.config !== next.config
+  ) {
+    return true;
+  }
+
+  if (
+    previous.sequenceHealth.lastAnomalyText !== next.sequenceHealth.lastAnomalyText &&
+    next.sequenceHealth.lastAnomalyText !== undefined
+  ) {
+    return true;
+  }
+
+  return next.lastMessageType !== "stereo_frame";
 }

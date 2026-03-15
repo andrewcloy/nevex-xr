@@ -114,7 +114,7 @@ export class JetsonTransportAdapter
       port: 8090,
       path: "/jetson/messages",
       protocolType: "websocket_json",
-      streamName: "jetson_sender_prototype_stream",
+      streamName: "jetson_sender_runtime_stream",
       ...options.config,
     });
 
@@ -235,10 +235,7 @@ export class JetsonTransportAdapter
     });
 
     await this.frameSource.start();
-    this.frameSource.updateStatus({
-      state: "idle",
-      lastError: undefined,
-    });
+    this.clearSourceSessionState("idle");
 
     await this.prototypeClient.connect(this.config);
   }
@@ -284,6 +281,19 @@ export class JetsonTransportAdapter
   }
 
   ingestTransportStatusPayload(payload: JetsonTransportStatusPayload): void {
+    if (payload.transportState === "reconnecting") {
+      this.clearTransportSessionState();
+      this.clearSourceSessionState("reconnecting");
+    } else if (
+      payload.transportState === "running" &&
+      payload.connected === true &&
+      !this.status.connected &&
+      this.status.lastMessageType === undefined
+    ) {
+      this.clearTransportSessionState();
+      this.clearSourceSessionState("idle");
+    }
+
     const transportStatusPatch = mapJetsonTransportStatusPayload(
       payload,
       this.status,
@@ -386,6 +396,35 @@ export class JetsonTransportAdapter
 
   async sendControlMessage(message: unknown): Promise<void> {
     await this.prototypeClient.sendMessageObject(message);
+  }
+
+  private clearTransportSessionState(): void {
+    this.sequenceMonitor.reset();
+    this.updateStatus({
+      lastMessageType: undefined,
+      lastSequence: undefined,
+      lastMessageTimestampMs: undefined,
+      lastMessageSizeBytes: undefined,
+      lastError: undefined,
+      lastParseError: undefined,
+      capabilities: undefined,
+      sequenceHealth: this.sequenceMonitor.getSnapshot(),
+    });
+  }
+
+  private clearSourceSessionState(state: "idle" | "reconnecting"): void {
+    this.frameSource.updateStatus({
+      state,
+      lastFrameId: undefined,
+      lastTimestampMs: undefined,
+      lastError: undefined,
+      statusText: undefined,
+      telemetryUpdatedAtMs: undefined,
+      telemetryReceivedAtMs: undefined,
+      cameraTelemetry: undefined,
+      thermalTelemetry: undefined,
+      irIlluminatorTelemetry: undefined,
+    });
   }
 
   private updateStatus(patch: Partial<LiveTransportStatusSnapshot>): void {

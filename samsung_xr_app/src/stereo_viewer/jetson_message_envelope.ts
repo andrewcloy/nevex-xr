@@ -1257,7 +1257,9 @@ function validateStereoFramePayload(
     sceneId: validateOptionalString(record.sceneId, "payload.sceneId"),
     streamName: validateOptionalString(record.streamName, "payload.streamName"),
     tags: validateOptionalStringArray(record.tags, "payload.tags"),
-    extras: validateOptionalPrimitiveRecord(record.extras, "payload.extras"),
+    extras: validateOptionalPrimitiveRecord(record.extras, "payload.extras", {
+      dropInvalidEntries: true,
+    }),
     overlay:
       record.overlay === undefined
         ? undefined
@@ -1679,7 +1681,7 @@ function validateOptionalString(
   value: unknown,
   fieldPath: string,
 ): string | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1698,7 +1700,7 @@ function validateOptionalBoolean(
   value: unknown,
   fieldPath: string,
 ): boolean | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1734,7 +1736,7 @@ function validateOptionalEnum<T extends readonly string[]>(
   fieldPath: string,
   allowed: T,
 ): T[number] | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1758,7 +1760,7 @@ function validateOptionalPositiveInteger(
   value: unknown,
   fieldPath: string,
 ): number | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1806,7 +1808,7 @@ function validateOptionalNonNegativeInteger(
   value: unknown,
   fieldPath: string,
 ): number | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1817,7 +1819,7 @@ function validateOptionalNonNegativeNumber(
   value: unknown,
   fieldPath: string,
 ): number | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1828,7 +1830,7 @@ function validateOptionalFiniteNumber(
   value: unknown,
   fieldPath: string,
 ): number | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1859,7 +1861,7 @@ function validateOptionalPositiveNumber(
   value: unknown,
   fieldPath: string,
 ): number | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1895,7 +1897,7 @@ function validateOptionalNormalizedNumber(
   value: unknown,
   fieldPath: string,
 ): number | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1906,7 +1908,7 @@ function validateOptionalArray(
   value: unknown,
   fieldPath: string,
 ): readonly unknown[] | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1948,7 +1950,7 @@ function validateOptionalStringOrNumber(
   value: unknown,
   fieldPath: string,
 ): string | number | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -1966,12 +1968,16 @@ function validateOptionalStringOrNumber(
 function validateOptionalPrimitiveRecord(
   value: unknown,
   fieldPath: string,
+  options: {
+    readonly dropInvalidEntries?: boolean;
+  } = {},
 ): Readonly<Record<string, string | number | boolean | null>> | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
   const record = expectRecord(value, fieldPath, "invalid_payload");
+  const normalized: Record<string, string | number | boolean | null> = {};
   for (const [key, entry] of Object.entries(record)) {
     if (
       entry !== null &&
@@ -1979,22 +1985,28 @@ function validateOptionalPrimitiveRecord(
       typeof entry !== "number" &&
       typeof entry !== "boolean"
     ) {
+      if (options.dropInvalidEntries) {
+        continue;
+      }
+
       throw new JetsonProtocolIssueError(
         "invalid_payload",
         `${fieldPath}.${key}`,
         "must be a primitive value (string, number, boolean, or null).",
       );
     }
+
+    normalized[key] = entry as string | number | boolean | null;
   }
 
-  return record as Readonly<Record<string, string | number | boolean | null>>;
+  return normalized;
 }
 
 function validateOptionalOptionRecord(
   value: unknown,
   fieldPath: string,
 ): Readonly<Record<string, string | number | boolean>> | undefined {
-  if (value === undefined) {
+  if (isNullOrUndefined(value)) {
     return undefined;
   }
 
@@ -2068,6 +2080,10 @@ function measureJsonByteSize(value: unknown): number {
 
 function measureUtf8ByteSize(value: string): number {
   return new TextEncoder().encode(value).length;
+}
+
+function isNullOrUndefined(value: unknown): value is null | undefined {
+  return value === undefined || value === null;
 }
 
 const TRANSPORT_STATES = [

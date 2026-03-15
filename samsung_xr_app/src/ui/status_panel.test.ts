@@ -476,8 +476,9 @@ describe("StatusPanelController", () => {
 
     const snapshot = statusPanel.getSnapshot();
 
-    expect(snapshot.jetsonControlModeText).toBe("Active");
+    expect(snapshot.jetsonControlModeText).toBe("Active (control-plane only)");
     expect(snapshot.jetsonOperatorControlsAvailable).toBe(true);
+    expect(snapshot.runtimeOperationText).toBe("Control-plane only");
     expect(snapshot.jetsonRuntimeStatusText).toBe(
       "Jetson profile switched to low_latency_720p60.",
     );
@@ -493,7 +494,9 @@ describe("StatusPanelController", () => {
     expect(snapshot.jetsonArtifactText).toContain(
       "/tmp/nevex/stereo_snapshot_001.jpg",
     );
-    expect(snapshot.lines).toContain("Jetson control plane: Active");
+    expect(snapshot.lines).toContain(
+      "Jetson control plane: Active (control-plane only)",
+    );
 
     await statusPanel.runJetsonPreflight();
     await statusPanel.refreshJetsonEffectiveConfig();

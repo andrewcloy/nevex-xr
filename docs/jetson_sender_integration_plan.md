@@ -4,9 +4,9 @@ This note defines the first real Jetson-side sender target for the Samsung XR
 browser viewer. The goal is a small proof-of-life sender that works with the
 current WebSocket JSON protocol before any codec or media transport work starts.
 
-The current repo now includes an additive prototype implementation at
-`scripts/jetson_sender_prototype.mjs`. See
-`docs/jetson_sender_prototype_runbook.md` for the exact bring-up flow.
+The current repo now includes an additive runtime implementation at
+`scripts/jetson_sender_runtime.mjs`. See
+`docs/jetson_sender_runtime_runbook.md` for the exact bring-up flow.
 
 That prototype now routes frame production through a sender-side frame-provider
 seam so future still-image, generated, sequence-replay, or camera-backed

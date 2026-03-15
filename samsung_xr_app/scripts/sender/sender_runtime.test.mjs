@@ -237,6 +237,78 @@ describe("sender runtime", () => {
     await closeServer(server);
   });
 
+  it("surfaces unsupported control commands as structured runtime errors", async () => {
+    activeFrameProvider = createJetsonControlPlaneProvider();
+
+    const server = await startJetsonSenderPrototype(
+      createRuntimeConfig({
+        captureBackend: "jetson",
+      }),
+    );
+    await waitForServerListening(server);
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("Expected a TCP server address.");
+    }
+
+    const socket = new WebSocket(`ws://127.0.0.1:${address.port}/jetson/messages`);
+    const messages = [];
+
+    socket.on("message", (data) => {
+      messages.push(JSON.parse(data.toString("utf8")));
+    });
+
+    await new Promise((resolve, reject) => {
+      socket.once("open", resolve);
+      socket.once("error", reject);
+    });
+
+    await waitFor(() => {
+      return messages.some((message) => {
+        return (
+          message.messageType === "source_status" &&
+          message.payload?.cameraTelemetry?.bridgeMode ===
+            "jetson_runtime_control_plane"
+        );
+      });
+    }, 3000);
+
+    socket.send(
+      JSON.stringify({
+        type: "diagnostics_command",
+        timestampMs: Date.now(),
+        payload: {
+          action: "refresh",
+        },
+      }),
+    );
+
+    await waitFor(() => {
+      return messages.some((message) => {
+        return (
+          message.messageType === "error" &&
+          message.payload?.code === "unsupported_control_command"
+        );
+      });
+    }, 3000);
+
+    expect(
+      messages.some((message) => {
+        return (
+          message.messageType === "source_status" &&
+          message.payload?.statusText ===
+            "Unsupported control command: diagnostics_command."
+        );
+      }),
+    ).toBe(true);
+
+    socket.close();
+    await new Promise((resolve) => {
+      socket.once("close", resolve);
+    });
+    await closeServer(server);
+  });
+
   it("streams Jetson preview bridge frames through the existing stereo_frame contract", async () => {
     activeFrameProvider = createJetsonPreviewBridgeProvider();
 

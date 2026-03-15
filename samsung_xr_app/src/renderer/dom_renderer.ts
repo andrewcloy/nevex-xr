@@ -132,7 +132,11 @@ export class DomRendererAdapter {
     const noFeed = createNoFeedPresentation({
       sourceMode: settings.sourceMode,
       connectionStatusText: scene.statusPanel.panel.connectionStatusText,
+      transportConnectionStatusText:
+        scene.statusPanel.panel.transportConnectionStatusText,
       transportStatusText: scene.statusPanel.panel.transportStatusText,
+      runtimeOperationText: scene.statusPanel.panel.runtimeOperationText,
+      jetsonControlModeText: scene.statusPanel.panel.jetsonControlModeText,
       adapterDisplayName: diagnostics.transportAdapterDisplayName,
       hasEyeImages:
         presentation.leftEye.hasImageContent || presentation.rightEye.hasImageContent,
@@ -2276,7 +2280,10 @@ function renderNoFeedOverlay(noFeed: {
 function createNoFeedPresentation(options: {
   readonly sourceMode: SourceMode;
   readonly connectionStatusText: string;
+  readonly transportConnectionStatusText: string;
   readonly transportStatusText: string;
+  readonly runtimeOperationText: string;
+  readonly jetsonControlModeText: string;
   readonly adapterDisplayName: string;
   readonly hasEyeImages: boolean;
   readonly splashVisible: boolean;
@@ -2295,14 +2302,27 @@ function createNoFeedPresentation(options: {
     !options.splashVisible &&
     options.sourceMode === "live" &&
     !options.hasEyeImages;
+  const transportConnected =
+    options.transportConnectionStatusText === "Connected";
+  const controlPlaneOnly =
+    options.runtimeOperationText === "Control-plane only" ||
+    options.jetsonControlModeText === "Active (control-plane only)";
 
   return {
     visible,
     title: "NO LIVE FEED",
     statusText:
-      options.connectionStatusText === "Connected" ? "Awaiting source frames" : "Jetson offline",
-    guidanceText: "Turn on device or connect source",
-    detailText: `Active adapter: ${options.adapterDisplayName} · ${options.transportStatusText}`,
+      !transportConnected
+        ? "Jetson transport offline"
+        : controlPlaneOnly
+          ? "Control plane connected"
+          : "Awaiting first stereo frame",
+    guidanceText: !transportConnected
+      ? "Turn on device or connect source"
+      : controlPlaneOnly
+        ? "Enable the preview bridge on the sender to receive live stereo_frame traffic"
+        : "Wait for sender preview frames or inspect Jetson runtime status",
+    detailText: `Active adapter: ${options.adapterDisplayName} · ${options.transportStatusText} · ${options.runtimeOperationText}`,
     handMenuReadyText: options.handMenuOpen
       ? "Left-hand quick menu scaffold is visible and ready for future XR runtime pinch input."
       : "Left-hand quick menu scaffold remains available for future XR runtime pinch input.",

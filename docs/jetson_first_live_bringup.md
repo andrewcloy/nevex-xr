@@ -63,6 +63,8 @@ Install dependencies if needed:
 
 ```bash
 cd ~/NEVEX_XR/samsung_xr_app
+node --version
+npm --version
 npm install
 ```
 
@@ -116,6 +118,8 @@ Install dependencies if needed:
 
 ```powershell
 cd C:\Users\andre\Desktop\NEVEX_XR\samsung_xr_app
+node --version
+npm --version
 npm install
 ```
 
@@ -181,6 +185,14 @@ If transport connects but `Last frame` stays `Pending`:
 - watch whether `Last message type` reaches `stereo_frame`
 - if only `source_status` appears, the control plane is alive but live preview is
   not reaching the XR app yet
+- if `Jetson control mode` shows `Active (control-plane only)`, the sender is
+  healthy but continuous preview delivery is intentionally disabled
+
+If `node` or `npm` is missing on the Jetson or XR app host:
+
+- install a current Node.js LTS release
+- rerun `npm install` from `NEVEX_XR/samsung_xr_app`
+- restart the sender or XR app host process after the install completes
 
 If XR shows `Jetson preflight` fail:
 

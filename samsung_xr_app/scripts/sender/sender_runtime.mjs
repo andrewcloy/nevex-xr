@@ -76,6 +76,8 @@ export async function startJetsonSenderRuntime(config) {
       socket,
       config,
       remoteLabel: `${request.socket.remoteAddress ?? "unknown"}:${request.socket.remotePort ?? "?"}`,
+    }).catch((error) => {
+      console.error("[sender-prototype] unhandled client connection error:", error);
     });
   });
 
@@ -248,7 +250,14 @@ async function handleClientConnection(options) {
     const serializedEnvelope = JSON.stringify(envelope);
     const byteSize = Buffer.byteLength(serializedEnvelope, "utf8");
     warnIfPayloadOversize(byteSize);
-    socket.send(serializedEnvelope);
+    socket.send(serializedEnvelope, (error) => {
+      if (error) {
+        console.error(
+          `[sender-prototype] socket send error for ${remoteLabel}:`,
+          error,
+        );
+      }
+    });
   };
 
   const sendBinaryStereoFrameEnvelope = (envelope, providerFrame) => {
@@ -262,9 +271,20 @@ async function handleClientConnection(options) {
       rightImageBytes: providerFrame.right.bytes,
     });
     warnIfPayloadOversize(binaryMessage.byteLength);
-    socket.send(binaryMessage, {
-      binary: true,
-    });
+    socket.send(
+      binaryMessage,
+      {
+        binary: true,
+      },
+      (error) => {
+        if (error) {
+          console.error(
+            `[sender-prototype] binary send error for ${remoteLabel}:`,
+            error,
+          );
+        }
+      },
+    );
   };
 
   const nextSequence = () => {
@@ -333,6 +353,22 @@ async function handleClientConnection(options) {
           irIlluminatorStatus: createSourceStatusIrIlluminatorStatus(
             irIlluminatorStatus,
           ),
+        },
+        {
+          timestampMs,
+          sequence: nextSequence(),
+        },
+      ),
+    );
+  };
+
+  const sendTransportStatus = (overrides = {}, timestampMs = Date.now()) => {
+    sendEnvelope(
+      buildTransportStatusEnvelope(
+        {
+          transportState: "running",
+          connected: true,
+          ...overrides,
         },
         {
           timestampMs,
@@ -528,6 +564,29 @@ async function handleClientConnection(options) {
     return frameProvider.handleControlCommand(command);
   };
 
+  const sendUnsupportedControlCommand = (commandLabel) => {
+    const message = `Unsupported control command: ${commandLabel}.`;
+    sendEnvelope(
+      buildErrorEnvelope(
+        {
+          code: "unsupported_control_command",
+          stage: "source",
+          recoverable: true,
+          message,
+        },
+        {
+          sequence: nextSequence(),
+        },
+      ),
+    );
+    sendSourceStatus(
+      {
+        statusText: message,
+      },
+      Date.now(),
+    );
+  };
+
   const handleControlMessage = async (data) => {
     let parsedMessage;
     try {
@@ -580,8 +639,10 @@ async function handleClientConnection(options) {
         if (Object.keys(command.payload.changes).length === 0) {
           return;
         }
-        await applyLiveControlChanges(command.payload.changes);
         try {
+          const appliedLocalChanges = await applyLiveControlChanges(
+            command.payload.changes,
+          );
           const providerResult = await handleFrameProviderControlCommand(command);
           if (providerResult.handled) {
             if (providerResult.refreshCapabilities) {
@@ -590,6 +651,14 @@ async function handleClientConnection(options) {
             sendSourceStatus(
               {
                 statusText: providerResult.statusText,
+                lastError: undefined,
+              },
+              Date.now(),
+            );
+          } else if (appliedLocalChanges) {
+            sendSourceStatus(
+              {
+                statusText: "Applied local runtime settings.",
                 lastError: undefined,
               },
               Date.now(),
@@ -625,12 +694,7 @@ async function handleClientConnection(options) {
       case "overlay_command":
       case "viewer_command":
       case "diagnostics_command":
-        sendSourceStatus(
-          {
-            statusText: `Ignored unsupported control command: ${command.type}.`,
-          },
-          Date.now(),
-        );
+        sendUnsupportedControlCommand(command.type);
         break;
       case "session_command":
         try {
@@ -674,11 +738,8 @@ async function handleClientConnection(options) {
           );
           break;
         }
-        sendSourceStatus(
-          {
-            statusText: `Ignored unsupported control command: ${command.type}.`,
-          },
-          Date.now(),
+        sendUnsupportedControlCommand(
+          `session_command:${command.payload?.action ?? "unknown"}`,
         );
         break;
     }
@@ -689,23 +750,9 @@ async function handleClientConnection(options) {
   });
 
   sendCapabilitiesSnapshot();
-  sendEnvelope(
-    buildTransportStatusEnvelope(
-      {
-        transportState: "running",
-        connected: true,
-        statusText:
-          config.captureBackend === "jetson"
-            ? config.jetsonPreviewEnabled
-              ? `Jetson sender bridge connected for ${config.senderName}; Jetson control-plane telemetry and the persistent Jetson preview publisher are active.`
-              : `Jetson sender bridge connected for ${config.senderName}; live control-plane telemetry is active and continuous stereo_frame transport is disabled.`
-            : `Jetson sender prototype connected for ${config.senderName}.`,
-      },
-      {
-        sequence: nextSequence(),
-      },
-    ),
-  );
+  sendTransportStatus({
+    statusText: `Jetson WebSocket connected for ${config.senderName}; starting ${config.provider} provider.`,
+  });
 
   try {
     await frameProvider.start();
@@ -733,9 +780,18 @@ async function handleClientConnection(options) {
     if (shouldAutoSendFrames(frameProvider)) {
       const initialFrame = await sendStereoFrame();
       if (initialFrame) {
+        sendTransportStatus({
+          statusText:
+            config.captureBackend === "jetson" && config.jetsonPreviewEnabled
+              ? `Jetson WebSocket connected for ${config.senderName}; preview bridge active and stereo_frame delivery is live.`
+              : `Jetson WebSocket connected for ${config.senderName}; stereo_frame delivery is live.`,
+        });
         scheduleNextFrame(resolveNextStereoFrameDelayMs(config, initialFrame));
       }
     } else {
+      sendTransportStatus({
+        statusText: `Jetson WebSocket connected for ${config.senderName}; control-plane telemetry is active and continuous stereo_frame transport is disabled.`,
+      });
       console.log(
         `[sender-prototype] provider ${providerStatus.providerDisplayName} is running in control-plane mode without automatic stereo_frame streaming.`,
       );
@@ -745,6 +801,10 @@ async function handleClientConnection(options) {
       `[sender-prototype] provider startup error for ${remoteLabel}:`,
       error,
     );
+    sendTransportStatus({
+      statusText: `Jetson WebSocket connected for ${config.senderName}; source provider startup failed.`,
+      lastError: error instanceof Error ? error.message : String(error),
+    });
     sendProviderError(error, "Frame provider failed to start: ");
   }
 

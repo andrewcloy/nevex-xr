@@ -844,6 +844,7 @@ function formatSequenceHealth(snapshot: {
   readonly repeatedCount: number;
   readonly outOfOrderCount: number;
   readonly droppedCountEstimate: number;
+  readonly lastAnomalyText?: string;
 }): string {
   if (
     snapshot.repeatedCount === 0 &&
@@ -853,7 +854,12 @@ function formatSequenceHealth(snapshot: {
     return "Healthy";
   }
 
-  return `Repeated ${snapshot.repeatedCount}, out-of-order ${snapshot.outOfOrderCount}, dropped est ${snapshot.droppedCountEstimate}`;
+  return [
+    `Repeated ${snapshot.repeatedCount}, out-of-order ${snapshot.outOfOrderCount}, dropped est ${snapshot.droppedCountEstimate}`,
+    snapshot.lastAnomalyText ? `last anomaly: ${snapshot.lastAnomalyText}` : undefined,
+  ]
+    .filter((part): part is string => typeof part === "string")
+    .join(" | ");
 }
 
 function formatByteSize(value: number | undefined): string {
@@ -1030,7 +1036,7 @@ function formatJetsonControlModeText(
   if (isJetsonRuntimeBridgeMode(diagnostics.cameraTelemetry?.bridgeMode)) {
     return diagnostics.cameraTelemetry?.bridgeMode === "jetson_runtime_preview_bridge"
       ? "Active (preview bridge)"
-      : "Active";
+      : "Active (control-plane only)";
   }
 
   if (!settings.liveTransportConnected) {
@@ -1171,6 +1177,10 @@ function formatRuntimeOperationText(
 
   if (runtimeSourceModeText === "simulated") {
     return "Intentional simulation";
+  }
+
+  if (runtimeSourceModeText === "control_plane") {
+    return "Control-plane only";
   }
 
   return "Runtime pending";
