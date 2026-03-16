@@ -127,6 +127,77 @@ describe("DiagnosticsPanelController", () => {
     diagnosticsPanel.dispose();
     diagnosticsStore.dispose();
   });
+
+  it("shows websocket-open, awaiting-frame, receiving-frame, and retry lifecycle states", () => {
+    const settingsStore = new SettingsStore({
+      sourceMode: "live",
+      liveTransportAdapterType: "jetson_stub",
+      liveTransportAdapterDisplayName: "Jetson WebSocket Transport Adapter",
+      liveTransportStatusState: "running",
+      liveTransportConnected: true,
+      liveTransportStatusText:
+        "WebSocket transport connected to ws://192.168.1.56:8090/jetson/messages.",
+    });
+    const diagnosticsStore = new DiagnosticsStore(settingsStore);
+    const diagnosticsPanel = new DiagnosticsPanelController(
+      settingsStore,
+      diagnosticsStore,
+    );
+
+    expect(diagnosticsPanel.getSnapshot().transportLifecycleText).toBe(
+      "WebSocket open",
+    );
+
+    settingsStore.update({
+      liveTransportLastMessageType: "capabilities",
+      liveTransportLastMessageTimestampMs: Date.now(),
+    });
+    expect(diagnosticsPanel.getSnapshot().transportLifecycleText).toBe(
+      "Awaiting first frame",
+    );
+
+    const nowMs = Date.now();
+    const baseViewerSnapshot = createViewerSnapshot({
+      sourceState: "running",
+      captureHealthState: "healthy",
+      telemetryReceivedAtMs: nowMs,
+    });
+    diagnosticsStore.recordViewerSnapshot({
+      ...baseViewerSnapshot,
+      currentFrame: {
+        frameId: 12,
+        timestampMs: nowMs,
+        source: "live",
+        metadata: {
+          extras: {
+            providerType: "camera",
+            bridgeMode: "jetson_runtime_preview_bridge",
+          },
+        },
+        left: createFrameEye("left"),
+        right: createFrameEye("right"),
+      },
+    });
+    expect(diagnosticsPanel.getSnapshot().transportLifecycleText).toBe(
+      "Receiving stereo_frame",
+    );
+    expect(diagnosticsPanel.getSnapshot().lines).toContain(
+      "Transport lifecycle: Receiving stereo_frame",
+    );
+
+    settingsStore.update({
+      liveTransportStatusState: "reconnecting",
+      liveTransportConnected: false,
+      liveTransportStatusText:
+        "WebSocket transport disconnected. Retrying in 1500 ms...",
+    });
+    expect(diagnosticsPanel.getSnapshot().transportLifecycleText).toBe(
+      "Retry scheduled (1500 ms)",
+    );
+
+    diagnosticsPanel.dispose();
+    diagnosticsStore.dispose();
+  });
 });
 
 function createNoopActions() {

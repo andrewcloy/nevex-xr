@@ -27,6 +27,13 @@ export interface JetsonWebSocketTransportClientOptions {
   readonly createWebSocket?: JetsonPrototypeWebSocketFactory;
 }
 
+interface PendingBinaryTransportMessage {
+  readonly socket: WebSocket;
+  readonly sessionId: number;
+  readonly rawData: unknown;
+  readonly messageId: number;
+}
+
 /**
  * Minimal browser-friendly JSON-over-WebSocket transport prototype.
  *
@@ -55,6 +62,16 @@ export class JetsonWebSocketTransportClient {
   private manualDisconnect = false;
 
   private messageHandlingQueue: Promise<void> = Promise.resolve();
+
+  // Coalesce binary stereo_frame work so a slow decode/present step never forces
+  // the browser to grind through an ever-growing queue of stale frames.
+  private pendingBinaryMessage?: PendingBinaryTransportMessage;
+
+  private binaryMessageDrainScheduled = false;
+
+  private nextBinaryMessageId = 0;
+
+  private latestQueuedBinaryMessageId = 0;
 
   private retainedBinaryFrameObjectUrls: string[][] = [];
 
@@ -143,6 +160,7 @@ export class JetsonWebSocketTransportClient {
     this.socket = socket;
     this.socket.binaryType = "arraybuffer";
     this.messageHandlingQueue = Promise.resolve();
+    this.resetBinaryMessageQueue();
     const sessionId = ++this.activeSessionId;
     this.scheduleConnectTimeout(socket, sessionId, url);
 
@@ -168,24 +186,14 @@ export class JetsonWebSocketTransportClient {
         return;
       }
 
-      this.messageHandlingQueue = this.messageHandlingQueue
-        .then(() => {
+      if (typeof event.data === "string") {
+        this.enqueueMessageHandlingTask(socket, sessionId, () => {
           return this.handleMessage(socket, sessionId, event.data);
-        })
-        .catch((error) => {
-          if (!this.isActiveSocket(socket, sessionId)) {
-            return;
-          }
-
-          this.onTransportError({
-            stage: "parse",
-            recoverable: true,
-            message:
-              error instanceof Error
-                ? error.message
-                : "Unexpected WebSocket message handling failure.",
-          });
         });
+        return;
+      }
+
+      this.queueLatestBinaryMessage(socket, sessionId, event.data);
     });
 
     socket.addEventListener("error", () => {
@@ -210,6 +218,7 @@ export class JetsonWebSocketTransportClient {
       }
 
       this.clearConnectTimeout();
+      this.resetBinaryMessageQueue();
       this.revokeRetainedBinaryFrameObjectUrls();
       this.socket = undefined;
       const closeReason = event.reason || `Close code ${event.code}`;
@@ -254,6 +263,7 @@ export class JetsonWebSocketTransportClient {
     this.clearReconnectTimer();
     this.clearConnectTimeout();
     this.messageHandlingQueue = Promise.resolve();
+    this.resetBinaryMessageQueue();
     this.activeSessionId += 1;
     this.hadSocketOpenThisSession = false;
     this.sessionTransportErrorText = undefined;
@@ -345,6 +355,72 @@ export class JetsonWebSocketTransportClient {
     }
 
     this.handleBinaryMessage(socket, sessionId, binaryBytes);
+  }
+
+  private queueLatestBinaryMessage(
+    socket: WebSocket,
+    sessionId: number,
+    rawData: unknown,
+  ): void {
+    const messageId = ++this.nextBinaryMessageId;
+    this.latestQueuedBinaryMessageId = messageId;
+    this.pendingBinaryMessage = {
+      socket,
+      sessionId,
+      rawData,
+      messageId,
+    };
+    if (this.binaryMessageDrainScheduled) {
+      return;
+    }
+
+    this.binaryMessageDrainScheduled = true;
+    this.enqueueMessageHandlingTask(socket, sessionId, async () => {
+      this.binaryMessageDrainScheduled = false;
+      const pendingBinaryMessage = this.takePendingBinaryMessage();
+      if (!pendingBinaryMessage) {
+        return;
+      }
+
+      await this.handlePendingBinaryMessage(pendingBinaryMessage);
+    });
+  }
+
+  private async handlePendingBinaryMessage(
+    pendingBinaryMessage: PendingBinaryTransportMessage,
+  ): Promise<void> {
+    if (!this.isActiveSocket(pendingBinaryMessage.socket, pendingBinaryMessage.sessionId)) {
+      return;
+    }
+
+    if (this.isSupersededBinaryMessage(pendingBinaryMessage.messageId)) {
+      return;
+    }
+
+    const binaryBytes = await this.normalizeBinaryMessageData(pendingBinaryMessage.rawData);
+    if (!this.isActiveSocket(pendingBinaryMessage.socket, pendingBinaryMessage.sessionId)) {
+      return;
+    }
+
+    if (this.isSupersededBinaryMessage(pendingBinaryMessage.messageId)) {
+      return;
+    }
+
+    if (!binaryBytes) {
+      this.onTransportError({
+        stage: "parse",
+        recoverable: true,
+        message:
+          "WebSocket message data must be a JSON string or binary stereo_frame payload.",
+      });
+      return;
+    }
+
+    this.handleBinaryMessage(
+      pendingBinaryMessage.socket,
+      pendingBinaryMessage.sessionId,
+      binaryBytes,
+    );
   }
 
   private handleJsonMessage(
@@ -509,6 +585,41 @@ export class JetsonWebSocketTransportClient {
     }
   }
 
+  private enqueueMessageHandlingTask(
+    socket: WebSocket,
+    sessionId: number,
+    task: () => Promise<void>,
+  ): void {
+    this.messageHandlingQueue = this.messageHandlingQueue
+      .then(() => {
+        return task();
+      })
+      .catch((error) => {
+        if (!this.isActiveSocket(socket, sessionId)) {
+          return;
+        }
+
+        this.onTransportError({
+          stage: "parse",
+          recoverable: true,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Unexpected WebSocket message handling failure.",
+        });
+      });
+  }
+
+  private takePendingBinaryMessage(): PendingBinaryTransportMessage | undefined {
+    const pendingBinaryMessage = this.pendingBinaryMessage;
+    this.pendingBinaryMessage = undefined;
+    return pendingBinaryMessage;
+  }
+
+  private isSupersededBinaryMessage(messageId: number): boolean {
+    return messageId !== this.latestQueuedBinaryMessageId;
+  }
+
   private revokeRetainedBinaryFrameObjectUrls(): void {
     while (this.retainedBinaryFrameObjectUrls.length > 0) {
       const objectUrls = this.retainedBinaryFrameObjectUrls.shift();
@@ -520,6 +631,13 @@ export class JetsonWebSocketTransportClient {
 
   private isActiveSocket(socket: WebSocket, sessionId: number): boolean {
     return this.socket === socket && this.activeSessionId === sessionId;
+  }
+
+  private resetBinaryMessageQueue(): void {
+    this.pendingBinaryMessage = undefined;
+    this.binaryMessageDrainScheduled = false;
+    this.nextBinaryMessageId = 0;
+    this.latestQueuedBinaryMessageId = 0;
   }
 }
 

@@ -13,6 +13,7 @@ Desktop.ini
 # Node / web
 **/node_modules/
 **/dist/
+**/build/
 **/.vite/
 **/coverage/
 *.tsbuildinfo

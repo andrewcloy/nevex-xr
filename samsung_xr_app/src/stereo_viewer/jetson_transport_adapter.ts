@@ -262,7 +262,10 @@ export class JetsonTransportAdapter
 
   ingestFramePayload(payload: JetsonStereoFramePayload): void {
     try {
-      const frame = mapJetsonFramePayloadToStereoFrame(payload);
+      const frame = mapJetsonFramePayloadToStereoFrame(payload, {
+        messageType: this.status.lastMessageType ?? "stereo_frame",
+        messageSizeBytes: this.status.lastMessageSizeBytes,
+      });
       this.frameSource.pushFrame(frame);
       this.updateStatus({
         state: "running",

@@ -104,6 +104,14 @@ export interface JetsonStereoFramePayload {
   readonly right: JetsonEyeFramePayload;
 }
 
+// Local-only metadata keys attached after transport receipt so diagnostics can
+// stay aligned with the frame currently on screen without changing sender
+// protocol payloads.
+export const JETSON_VIEWER_RECEIPT_MESSAGE_TYPE_METADATA_KEY =
+  "__jetsonViewerReceiptMessageType";
+export const JETSON_VIEWER_RECEIPT_MESSAGE_SIZE_BYTES_METADATA_KEY =
+  "__jetsonViewerReceiptMessageSizeBytes";
+
 export interface JetsonThermalHotspotAnnotationPayload {
   readonly id: string;
   readonly label?: string;
@@ -476,6 +484,10 @@ export function mapJetsonCapabilitiesPayload(
  */
 export function mapJetsonFramePayloadToStereoFrame(
   payload: JetsonStereoFramePayload,
+  receiptMetadata: {
+    readonly messageType?: string;
+    readonly messageSizeBytes?: number;
+  } = {},
 ): StereoFrame {
   const frameId = requireFiniteNumber(payload.frameId, "frameId");
   const timestampMs =
@@ -492,7 +504,7 @@ export function mapJetsonFramePayloadToStereoFrame(
       sceneId: payload.sceneId,
       streamName: payload.streamName,
       tags: payload.tags,
-      extras: payload.extras,
+      extras: mergeFrameMetadataExtras(payload.extras, receiptMetadata),
     },
     overlay: payload.overlay ? mapJetsonOverlayPayload(payload.overlay) : undefined,
     thermalFrame: payload.thermalFrame
@@ -502,6 +514,32 @@ export function mapJetsonFramePayloadToStereoFrame(
     left: mapJetsonEyeFramePayload(payload.left, "left"),
     right: mapJetsonEyeFramePayload(payload.right, "right"),
   };
+}
+
+function mergeFrameMetadataExtras(
+  extras: JetsonStereoFramePayload["extras"],
+  receiptMetadata: {
+    readonly messageType?: string;
+    readonly messageSizeBytes?: number;
+  },
+): Readonly<Record<string, StereoMetadataValue>> | undefined {
+  const mergedExtras: Record<string, StereoMetadataValue> = {
+    ...(extras ?? {}),
+  };
+
+  if (typeof receiptMetadata.messageType === "string") {
+    mergedExtras[JETSON_VIEWER_RECEIPT_MESSAGE_TYPE_METADATA_KEY] =
+      receiptMetadata.messageType;
+  }
+  if (
+    typeof receiptMetadata.messageSizeBytes === "number" &&
+    Number.isFinite(receiptMetadata.messageSizeBytes)
+  ) {
+    mergedExtras[JETSON_VIEWER_RECEIPT_MESSAGE_SIZE_BYTES_METADATA_KEY] =
+      receiptMetadata.messageSizeBytes;
+  }
+
+  return Object.keys(mergedExtras).length > 0 ? mergedExtras : undefined;
 }
 
 /**

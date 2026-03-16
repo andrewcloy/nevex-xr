@@ -24,6 +24,10 @@ import type {
   LiveTransportSequenceHealthSnapshot,
 } from "../stereo_viewer/transport_adapter";
 import {
+  JETSON_VIEWER_RECEIPT_MESSAGE_SIZE_BYTES_METADATA_KEY,
+  JETSON_VIEWER_RECEIPT_MESSAGE_TYPE_METADATA_KEY,
+} from "../stereo_viewer/jetson_transport_payloads";
+import {
   createDefaultIrIlluminatorCapabilitySnapshot,
   createDefaultThermalCapabilitySnapshot,
   DEFAULT_THERMAL_OVERLAY_MODE,
@@ -194,6 +198,7 @@ export interface DiagnosticsSnapshot {
   readonly transportStatusState: LiveTransportAdapterState;
   readonly transportConnected: boolean;
   readonly transportConnectionStatusText: string;
+  readonly transportLifecycleText: string;
   readonly transportStatusText: string;
   readonly transportErrorText?: string;
   readonly transportParseErrorText?: string;
@@ -258,6 +263,8 @@ export class DiagnosticsStore {
 
   private lastFrameTimestampMs?: number;
 
+  private hasReceivedStereoFrameInSession = false;
+
   constructor(
     private readonly settingsStore: SettingsStore,
     options: DiagnosticsStoreOptions = {},
@@ -265,8 +272,10 @@ export class DiagnosticsStore {
     this.nowFn = options.nowFn ?? Date.now;
     this.staleThresholdMs =
       options.staleThresholdMs ?? DEFAULT_SOURCE_TELEMETRY_STALE_THRESHOLD_MS;
-    this.setIntervalFn = options.setIntervalFn ?? setInterval;
-    this.clearIntervalFn = options.clearIntervalFn ?? clearInterval;
+    this.setIntervalFn =
+      options.setIntervalFn ?? ((...args) => globalThis.setInterval(...args));
+    this.clearIntervalFn =
+      options.clearIntervalFn ?? ((...args) => globalThis.clearInterval(...args));
     this.snapshot = createSnapshotFromSettings(settingsStore.getSnapshot());
     this.settingsUnsubscribe = this.settingsStore.subscribe((settings) => {
       this.handleSettingsSnapshot(settings);
@@ -293,6 +302,8 @@ export class DiagnosticsStore {
    * Records the latest viewer state and derives placeholder render diagnostics.
    */
   recordViewerSnapshot(viewerSnapshot: ViewerSurfaceSnapshot): void {
+    const nowMs = this.nowFn();
+    const previousSourceLastFrameId = this.snapshot.sourceLastFrameId;
     const frameTimestampMs = viewerSnapshot.currentFrame?.timestampMs;
     const nextFpsEstimate = estimateFps(
       this.lastFrameTimestampMs,
@@ -301,14 +312,49 @@ export class DiagnosticsStore {
     );
 
     this.lastFrameTimestampMs = frameTimestampMs;
+    if (
+      this.settingsStore.getSnapshot().sourceMode === "live" &&
+      viewerSnapshot.currentFrame?.source === "live"
+    ) {
+      this.hasReceivedStereoFrameInSession = true;
+    }
+    const hasNewRenderedLiveFrame =
+      viewerSnapshot.currentFrame?.source === "live" &&
+      typeof viewerSnapshot.currentFrame.frameId === "number" &&
+      viewerSnapshot.currentFrame.frameId !== previousSourceLastFrameId;
 
-    const cameraTelemetry = extractCameraTelemetry(
-      viewerSnapshot.frameSourceStatus,
-      viewerSnapshot.currentFrame?.metadata,
-      this.nowFn(),
+    const cameraTelemetry = applyRenderedFrameFreshnessEvidence(
+      extractCameraTelemetry(
+        viewerSnapshot.frameSourceStatus,
+        viewerSnapshot.currentFrame?.metadata,
+        nowMs,
+        this.staleThresholdMs,
+      ),
+      hasNewRenderedLiveFrame,
+      nowMs,
       this.staleThresholdMs,
     );
     const settings = this.settingsStore.getSnapshot();
+    const renderedTransportMessageType =
+      viewerSnapshot.currentFrame?.source === "live"
+        ? readStringMetadata(
+            viewerSnapshot.currentFrame?.metadata?.extras?.[
+              JETSON_VIEWER_RECEIPT_MESSAGE_TYPE_METADATA_KEY
+            ],
+          ) ?? "stereo_frame"
+        : undefined;
+    const renderedTransportMessageSizeBytes =
+      viewerSnapshot.currentFrame?.source === "live"
+        ? readNumberMetadata(
+            viewerSnapshot.currentFrame?.metadata?.extras?.[
+              JETSON_VIEWER_RECEIPT_MESSAGE_SIZE_BYTES_METADATA_KEY
+            ],
+          )
+        : undefined;
+    const transportLastMessageType =
+      renderedTransportMessageType ?? this.snapshot.transportLastMessageType;
+    const transportLastMessageSizeBytes =
+      renderedTransportMessageSizeBytes ?? this.snapshot.transportLastMessageSizeBytes;
     const thermalTelemetry = extractThermalTelemetry(
       viewerSnapshot.frameSourceStatus,
       viewerSnapshot.currentFrame,
@@ -364,6 +410,15 @@ export class DiagnosticsStore {
       sourceStatusText: viewerSnapshot.frameSourceStatus?.statusText,
       sourceHealthState,
       sourceHealthText: formatSourceHealthText(sourceHealthState),
+      transportLastMessageType,
+      transportLastMessageSizeBytes,
+      transportLifecycleText: formatTransportLifecycleText({
+        state: this.snapshot.transportStatusState,
+        connected: this.snapshot.transportConnected,
+        reconnectIntervalMs: this.snapshot.transportConfig.reconnectIntervalMs,
+        lastMessageType: transportLastMessageType,
+        hasReceivedStereoFrame: this.hasReceivedStereoFrameInSession,
+      }),
       cameraTelemetry,
       thermalTelemetry,
       irIlluminatorTelemetry,
@@ -382,6 +437,14 @@ export class DiagnosticsStore {
   }
 
   private handleSettingsSnapshot(settings: XrAppSettingsState): void {
+    if (
+      settings.sourceMode !== "live" ||
+      settings.liveTransportStatusState !== "running" ||
+      !settings.liveTransportConnected
+    ) {
+      this.hasReceivedStereoFrameInSession = false;
+    }
+
     const thermalTelemetry = mergeThermalTelemetryWithCapabilities(
       this.snapshot.thermalTelemetry,
       settings.liveTransportCapabilities,
@@ -418,6 +481,13 @@ export class DiagnosticsStore {
         settings.liveTransportStatusState,
         settings.liveTransportConnected,
       ),
+      transportLifecycleText: formatTransportLifecycleText({
+        state: settings.liveTransportStatusState,
+        connected: settings.liveTransportConnected,
+        reconnectIntervalMs: settings.liveTransportConfig.reconnectIntervalMs,
+        lastMessageType: settings.liveTransportLastMessageType,
+        hasReceivedStereoFrame: this.hasReceivedStereoFrameInSession,
+      }),
       transportStatusText: settings.liveTransportStatusText,
       transportErrorText: settings.liveTransportErrorText,
       transportParseErrorText: settings.liveTransportParseErrorText,
@@ -503,6 +573,13 @@ function createSnapshotFromSettings(
       settings.liveTransportStatusState,
       settings.liveTransportConnected,
     ),
+    transportLifecycleText: formatTransportLifecycleText({
+      state: settings.liveTransportStatusState,
+      connected: settings.liveTransportConnected,
+      reconnectIntervalMs: settings.liveTransportConfig.reconnectIntervalMs,
+      lastMessageType: settings.liveTransportLastMessageType,
+      hasReceivedStereoFrame: false,
+    }),
     transportStatusText: settings.liveTransportStatusText,
     transportErrorText: settings.liveTransportErrorText,
     transportParseErrorText: settings.liveTransportParseErrorText,
@@ -617,6 +694,44 @@ function mapTransportConnectionStatusText(
   return "Disconnected";
 }
 
+function formatTransportLifecycleText(options: {
+  readonly state: LiveTransportAdapterState;
+  readonly connected: boolean;
+  readonly reconnectIntervalMs: number;
+  readonly lastMessageType?: string;
+  readonly hasReceivedStereoFrame: boolean;
+}): string {
+  if (options.state === "starting" || options.state === "connecting") {
+    return "Transport connecting";
+  }
+
+  if (options.state === "reconnecting") {
+    return `Retry scheduled (${options.reconnectIntervalMs} ms)`;
+  }
+
+  if (options.state === "stopped") {
+    return "WebSocket closed";
+  }
+
+  if (options.state === "error") {
+    return "Transport error";
+  }
+
+  if (options.connected) {
+    if (options.hasReceivedStereoFrame) {
+      return "Receiving stereo_frame";
+    }
+
+    if (options.lastMessageType === undefined) {
+      return "WebSocket open";
+    }
+
+    return "Awaiting first frame";
+  }
+
+  return "Transport disconnected";
+}
+
 function extractCameraTelemetry(
   sourceStatus: StereoFrameSourceStatusSnapshot | undefined,
   metadata: StereoFrameMetadata | undefined,
@@ -650,6 +765,29 @@ function extractCameraTelemetry(
       sourceStatus?.statusText,
       sourceStatus?.lastError,
     ),
+    staleThresholdMs,
+    nowMs,
+  );
+}
+
+function applyRenderedFrameFreshnessEvidence(
+  cameraTelemetry: CameraTelemetrySnapshot | undefined,
+  hasNewRenderedLiveFrame: boolean,
+  nowMs: number,
+  staleThresholdMs: number,
+): CameraTelemetrySnapshot | undefined {
+  if (!cameraTelemetry || !hasNewRenderedLiveFrame) {
+    return cameraTelemetry;
+  }
+
+  return refreshCameraTelemetrySnapshot(
+    {
+      ...cameraTelemetry,
+      telemetryUpdatedAtMs: Math.max(
+        cameraTelemetry.telemetryUpdatedAtMs ?? 0,
+        nowMs,
+      ),
+    },
     staleThresholdMs,
     nowMs,
   );

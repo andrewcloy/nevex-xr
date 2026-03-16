@@ -143,6 +143,7 @@ export interface DiagnosticsPanelSnapshot {
   readonly sourceHealthTone: SourceHealthState;
   readonly transportAdapterText: string;
   readonly transportConnectionText: string;
+  readonly transportLifecycleText: string;
   readonly transportStatusText: string;
   readonly transportWebSocketUrlText: string;
   readonly transportHostText: string;
@@ -533,6 +534,7 @@ export class DiagnosticsPanelController {
       sourceHealthTone: diagnostics.sourceHealthState,
       transportAdapterText: diagnostics.transportAdapterDisplayName,
       transportConnectionText: diagnostics.transportConnectionStatusText,
+      transportLifecycleText: diagnostics.transportLifecycleText,
       transportStatusText: diagnostics.transportStatusText,
       transportWebSocketUrlText: buildTransportWebSocketUrl(
         diagnostics.transportConfig.host,
@@ -603,6 +605,7 @@ export class DiagnosticsPanelController {
         `Source error: ${diagnostics.sourceErrorText ?? "none"}`,
         `Transport adapter: ${diagnostics.transportAdapterDisplayName}`,
         `Transport connection: ${diagnostics.transportConnectionStatusText}`,
+        `Transport lifecycle: ${diagnostics.transportLifecycleText}`,
         `Transport status: ${diagnostics.transportStatusText}`,
         `Transport URL: ${buildTransportWebSocketUrl(
           diagnostics.transportConfig.host,

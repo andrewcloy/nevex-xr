@@ -18,6 +18,7 @@ import type {
   HandMenuSnapshot,
 } from "../ui/hand_menu";
 import { NEVEX_UI_TOKENS } from "../ui/presentation_tokens";
+import type { StatusPanelSnapshot } from "../ui/status_panel";
 import {
   DEFAULT_SPLASH_VARIANT,
   SUPPORTED_SPLASH_VARIANTS,
@@ -47,6 +48,29 @@ export interface DomRendererOptions {
   readonly app: SamsungXrAppSession;
 }
 
+interface TransportFormDraft {
+  readonly adapterType: LiveTransportAdapterType;
+  readonly host: string;
+  readonly portText: string;
+  readonly path: string;
+  readonly reconnectEnabled: boolean;
+}
+
+interface FocusedTransportControlState {
+  readonly control:
+    | "transport-host"
+    | "transport-port"
+    | "transport-path"
+    | "transport-reconnect";
+  readonly selectionStart?: number | null;
+  readonly selectionEnd?: number | null;
+}
+
+interface WindowScrollPosition {
+  readonly x: number;
+  readonly y: number;
+}
+
 /**
  * Browser renderer adapter that sits on top of the framework-agnostic app
  * scaffold and makes the mock experience visibly runnable in a local browser.
@@ -65,7 +89,15 @@ export class DomRendererAdapter {
 
   private pendingActionText?: string;
 
+  private transportFormDraft?: TransportFormDraft;
+
   private disposed = false;
+
+  private mounting = true;
+
+  private renderQueued = false;
+
+  private renderRequestId?: number;
 
   constructor(options: DomRendererOptions) {
     this.root = options.root;
@@ -83,32 +115,79 @@ export class DomRendererAdapter {
 
     this.unsubscribes.push(
       this.app.scene.subscribe(() => {
-        this.render();
+        this.scheduleRender();
       }),
       this.app.viewerSurface.subscribe(() => {
-        this.render();
+        this.scheduleRender();
       }),
       this.app.settingsStore.subscribe(() => {
-        this.render();
+        this.scheduleRender();
       }),
       this.app.diagnosticsStore.subscribe(() => {
-        this.render();
+        this.scheduleRender();
       }),
       this.app.ui.handMenu.subscribe(() => {
-        this.render();
+        this.scheduleRender();
       }),
     );
 
+    this.mounting = false;
     this.render();
     this.uiAudio.playBootSound();
   }
 
   dispose(): void {
     this.disposed = true;
+    this.cancelScheduledRender();
     for (const unsubscribe of this.unsubscribes) {
       unsubscribe();
     }
     this.root.innerHTML = "";
+  }
+
+  private scheduleRender(): void {
+    if (this.disposed || this.mounting || this.renderQueued) {
+      return;
+    }
+
+    this.renderQueued = true;
+    if (typeof globalThis.requestAnimationFrame === "function") {
+      this.renderRequestId = globalThis.requestAnimationFrame(() => {
+        this.renderRequestId = undefined;
+        if (!this.renderQueued) {
+          return;
+        }
+
+        this.renderQueued = false;
+        this.render();
+      });
+      return;
+    }
+
+    queueMicrotask(() => {
+      if (!this.renderQueued) {
+        return;
+      }
+
+      this.renderQueued = false;
+      this.render();
+    });
+  }
+
+  private cancelScheduledRender(): void {
+    this.renderQueued = false;
+    if (
+      this.renderRequestId !== undefined &&
+      typeof globalThis.cancelAnimationFrame === "function"
+    ) {
+      globalThis.cancelAnimationFrame(this.renderRequestId);
+    }
+    this.renderRequestId = undefined;
+  }
+
+  private renderImmediately(): void {
+    this.cancelScheduledRender();
+    this.render();
   }
 
   private render(): void {
@@ -116,12 +195,18 @@ export class DomRendererAdapter {
       return;
     }
 
+    const focusedTransportControlState = this.captureFocusedTransportControlState();
+    const windowScrollPosition = this.captureWindowScrollPosition();
+
     const scene = this.app.scene.getSnapshot();
     const viewer = this.app.viewerSurface.getSnapshot();
     const settings = this.app.settingsStore.getSnapshot();
     const diagnostics = this.app.diagnosticsStore.getSnapshot();
     const presentation = viewer.presentation;
     const handMenu = this.app.ui.handMenu.getSnapshot();
+    const transportFormState = this.resolveTransportFormState(
+      scene.statusPanel.panel,
+    );
     const splash = createSplashPresentationSnapshot({
       appRunning: scene.running,
       lifecycleState: scene.lifecycleState,
@@ -134,6 +219,7 @@ export class DomRendererAdapter {
       connectionStatusText: scene.statusPanel.panel.connectionStatusText,
       transportConnectionStatusText:
         scene.statusPanel.panel.transportConnectionStatusText,
+      transportLifecycleText: scene.statusPanel.panel.transportLifecycleText,
       transportStatusText: scene.statusPanel.panel.transportStatusText,
       runtimeOperationText: scene.statusPanel.panel.runtimeOperationText,
       jetsonControlModeText: scene.statusPanel.panel.jetsonControlModeText,
@@ -499,6 +585,12 @@ export class DomRendererAdapter {
                   )}</strong>
                 </div>
                 <div class="status-row">
+                  <span>Transport lifecycle</span>
+                  <strong>${escapeHtml(
+                    scene.statusPanel.panel.transportLifecycleText,
+                  )}</strong>
+                </div>
+                <div class="status-row">
                   <span>Transport adapter</span>
                   <strong>${escapeHtml(
                     scene.statusPanel.panel.transportAdapterDisplayName,
@@ -647,7 +739,7 @@ export class DomRendererAdapter {
                             data-control="transport-host"
                             type="text"
                             value="${escapeHtml(
-                              scene.statusPanel.panel.transportHost,
+                              transportFormState.host,
                             )}"
                           />
                         </div>
@@ -661,7 +753,7 @@ export class DomRendererAdapter {
                             type="number"
                             min="0"
                             step="1"
-                            value="${scene.statusPanel.panel.transportPort}"
+                            value="${escapeHtml(transportFormState.portText)}"
                           />
                         </div>
                         <div class="control-group">
@@ -673,7 +765,7 @@ export class DomRendererAdapter {
                             data-control="transport-path"
                             type="text"
                             value="${escapeHtml(
-                              scene.statusPanel.panel.transportPath,
+                              transportFormState.path,
                             )}"
                           />
                         </div>
@@ -683,7 +775,7 @@ export class DomRendererAdapter {
                               data-control="transport-reconnect"
                               type="checkbox"
                               ${
-                                scene.statusPanel.panel.transportReconnectEnabled
+                                transportFormState.reconnectEnabled
                                   ? "checked"
                                   : ""
                               }
@@ -1501,6 +1593,12 @@ export class DomRendererAdapter {
                   )}</strong>
                 </div>
                 <div class="status-row">
+                  <span>Transport lifecycle</span>
+                  <strong>${escapeHtml(
+                    scene.diagnosticsPanel.panel.transportLifecycleText,
+                  )}</strong>
+                </div>
+                <div class="status-row">
                   <span>Transport status</span>
                   <strong>${escapeHtml(
                     scene.diagnosticsPanel.panel.transportStatusText,
@@ -1663,6 +1761,10 @@ export class DomRendererAdapter {
     `;
 
     this.bindControls();
+    this.restoreFocusedTransportControlState(
+      focusedTransportControlState,
+      windowScrollPosition,
+    );
   }
 
   private bindControls(): void {
@@ -1685,6 +1787,7 @@ export class DomRendererAdapter {
     for (const input of adapterInputs) {
       input.addEventListener("change", () => {
         this.playUiInteractionSound();
+        this.transportFormDraft = undefined;
         const type = input.value as LiveTransportAdapterType;
         void this.runPendingAction(`Switching live adapter to ${type}...`, async () => {
           await this.app.ui.statusPanel.setLiveTransportAdapterType(type);
@@ -1824,7 +1927,7 @@ export class DomRendererAdapter {
       "input[data-control='transport-host']",
     );
     transportHostInput?.addEventListener("input", () => {
-      this.app.ui.statusPanel.updateTransportConfig({
+      this.updateTransportFormDraft({
         host: transportHostInput.value,
       });
     });
@@ -1833,8 +1936,8 @@ export class DomRendererAdapter {
       "input[data-control='transport-port']",
     );
     transportPortInput?.addEventListener("input", () => {
-      this.app.ui.statusPanel.updateTransportConfig({
-        port: Number(transportPortInput.value),
+      this.updateTransportFormDraft({
+        portText: transportPortInput.value,
       });
     });
 
@@ -1842,7 +1945,7 @@ export class DomRendererAdapter {
       "input[data-control='transport-path']",
     );
     transportPathInput?.addEventListener("input", () => {
-      this.app.ui.statusPanel.updateTransportConfig({
+      this.updateTransportFormDraft({
         path: transportPathInput.value,
       });
     });
@@ -1852,7 +1955,7 @@ export class DomRendererAdapter {
     );
     transportReconnectInput?.addEventListener("change", () => {
       this.playUiInteractionSound();
-      this.app.ui.statusPanel.updateTransportConfig({
+      this.updateTransportFormDraft({
         reconnectEnabled: transportReconnectInput.checked,
       });
     });
@@ -1862,6 +1965,7 @@ export class DomRendererAdapter {
     );
     applyTransportConfigButton?.addEventListener("click", () => {
       this.playUiInteractionSound();
+      this.commitTransportFormDraft();
       void this.runPendingAction("Applying transport config...", async () => {
         await this.app.ui.statusPanel.applyTransportConfig();
       });
@@ -1886,7 +1990,9 @@ export class DomRendererAdapter {
     );
     connectLiveTransportButton?.addEventListener("click", () => {
       this.playUiInteractionSound();
+      this.commitTransportFormDraft();
       void this.runPendingAction("Connecting WebSocket transport...", async () => {
+        await this.app.ui.statusPanel.applyTransportConfig();
         await this.app.ui.statusPanel.connectLiveTransport();
       });
     });
@@ -2022,14 +2128,154 @@ export class DomRendererAdapter {
     action: () => Promise<void>,
   ): Promise<void> {
     this.pendingActionText = message;
-    this.render();
+    this.renderImmediately();
 
     try {
       await action();
     } finally {
       this.pendingActionText = undefined;
-      this.render();
+      this.renderImmediately();
     }
+  }
+
+  private resolveTransportFormState(
+    panel: StatusPanelSnapshot,
+  ): TransportFormDraft {
+    if (this.transportFormDraft?.adapterType === panel.transportAdapterType) {
+      return this.transportFormDraft;
+    }
+
+    return {
+      adapterType: panel.transportAdapterType,
+      host: panel.transportHost,
+      portText: String(panel.transportPort),
+      path: panel.transportPath,
+      reconnectEnabled: panel.transportReconnectEnabled,
+    };
+  }
+
+  private updateTransportFormDraft(
+    patch: Partial<Omit<TransportFormDraft, "adapterType">>,
+  ): void {
+    const panel = this.app.ui.statusPanel.getSnapshot();
+    const currentDraft = this.resolveTransportFormState(panel);
+    this.transportFormDraft = {
+      ...currentDraft,
+      ...patch,
+      adapterType: panel.transportAdapterType,
+    };
+  }
+
+  private commitTransportFormDraft(): void {
+    const panel = this.app.ui.statusPanel.getSnapshot();
+    const draft = this.readTransportFormStateFromDom(panel);
+    this.transportFormDraft = undefined;
+    this.app.ui.statusPanel.updateTransportConfig({
+      host: draft.host,
+      port: parseTransportPortText(draft.portText),
+      path: draft.path,
+      reconnectEnabled: draft.reconnectEnabled,
+    });
+  }
+
+  private readTransportFormStateFromDom(
+    panel: StatusPanelSnapshot,
+  ): TransportFormDraft {
+    const hostInput = this.root.querySelector<HTMLInputElement>(
+      "input[data-control='transport-host']",
+    );
+    const portInput = this.root.querySelector<HTMLInputElement>(
+      "input[data-control='transport-port']",
+    );
+    const pathInput = this.root.querySelector<HTMLInputElement>(
+      "input[data-control='transport-path']",
+    );
+    const reconnectInput = this.root.querySelector<HTMLInputElement>(
+      "input[data-control='transport-reconnect']",
+    );
+
+    return {
+      adapterType: panel.transportAdapterType,
+      host: hostInput?.value ?? this.resolveTransportFormState(panel).host,
+      portText:
+        portInput?.value ?? this.resolveTransportFormState(panel).portText,
+      path: pathInput?.value ?? this.resolveTransportFormState(panel).path,
+      reconnectEnabled:
+        reconnectInput?.checked ??
+        this.resolveTransportFormState(panel).reconnectEnabled,
+    };
+  }
+
+  private captureFocusedTransportControlState():
+    | FocusedTransportControlState
+    | undefined {
+    const activeElement = this.root.ownerDocument.activeElement;
+    if (!(activeElement instanceof HTMLInputElement)) {
+      return undefined;
+    }
+
+    const control = activeElement.dataset.control;
+    if (
+      control !== "transport-host" &&
+      control !== "transport-port" &&
+      control !== "transport-path" &&
+      control !== "transport-reconnect"
+    ) {
+      return undefined;
+    }
+
+    return {
+      control,
+      selectionStart:
+        activeElement.type === "text" ? activeElement.selectionStart : undefined,
+      selectionEnd:
+        activeElement.type === "text" ? activeElement.selectionEnd : undefined,
+    };
+  }
+
+  private restoreFocusedTransportControlState(
+    focusState: FocusedTransportControlState | undefined,
+    scrollPosition: WindowScrollPosition,
+  ): void {
+    try {
+      globalThis.scrollTo?.(scrollPosition.x, scrollPosition.y);
+    } catch {
+      // Ignore scroll restore failures in non-browser test environments.
+    }
+
+    if (!focusState) {
+      return;
+    }
+
+    const activeControl = this.root.querySelector<HTMLInputElement>(
+      `input[data-control='${focusState.control}']`,
+    );
+    if (!activeControl) {
+      return;
+    }
+
+    try {
+      activeControl.focus({ preventScroll: true });
+      if (
+        activeControl.type === "text" &&
+        typeof focusState.selectionStart === "number" &&
+        typeof focusState.selectionEnd === "number"
+      ) {
+        activeControl.setSelectionRange(
+          focusState.selectionStart,
+          focusState.selectionEnd,
+        );
+      }
+    } catch {
+      // Ignore focus restore failures in non-browser test environments.
+    }
+  }
+
+  private captureWindowScrollPosition(): WindowScrollPosition {
+    return {
+      x: globalThis.scrollX ?? 0,
+      y: globalThis.scrollY ?? 0,
+    };
   }
 }
 
@@ -2073,6 +2319,11 @@ function renderTransportAdapterOption(
       <span>${label}</span>
     </label>
   `;
+}
+
+function parseTransportPortText(portText: string): number {
+  const parsedValue = Number(portText);
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
 }
 
 function renderThemeVariables(): string {
@@ -2281,6 +2532,7 @@ function createNoFeedPresentation(options: {
   readonly sourceMode: SourceMode;
   readonly connectionStatusText: string;
   readonly transportConnectionStatusText: string;
+  readonly transportLifecycleText: string;
   readonly transportStatusText: string;
   readonly runtimeOperationText: string;
   readonly jetsonControlModeText: string;
@@ -2313,12 +2565,18 @@ function createNoFeedPresentation(options: {
     title: "NO LIVE FEED",
     statusText:
       !transportConnected
-        ? "Jetson transport offline"
+        ? options.transportLifecycleText
         : controlPlaneOnly
           ? "Control plane connected"
-          : "Awaiting first stereo frame",
+          : options.transportLifecycleText === "WebSocket open"
+            ? "Awaiting first stereo frame"
+            : options.transportLifecycleText,
     guidanceText: !transportConnected
-      ? "Turn on device or connect source"
+      ? options.transportLifecycleText.startsWith("Retry scheduled")
+        ? "Inspect host, port, path, firewall/LAN reachability, and sender availability"
+        : options.transportLifecycleText === "Transport connecting"
+          ? "Wait for socket open or inspect endpoint reachability"
+          : "Turn on device or connect source"
       : controlPlaneOnly
         ? "Enable the preview bridge on the sender to receive live stereo_frame traffic"
         : "Wait for sender preview frames or inspect Jetson runtime status",

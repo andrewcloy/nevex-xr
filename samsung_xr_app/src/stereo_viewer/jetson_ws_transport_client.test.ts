@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  buildStereoFrameEnvelope,
   buildTransportStatusEnvelope,
   type JetsonMessageEnvelope,
 } from "./jetson_message_envelope";
@@ -16,6 +17,7 @@ import {
   type LiveTransportConfig,
 } from "./transport_adapter";
 import type {
+  JetsonEyeFramePayload,
   JetsonCapabilitiesPayload,
   JetsonRemoteConfigPayload,
   JetsonSourceStatusPayload,
@@ -23,6 +25,7 @@ import type {
   JetsonTransportErrorPayload,
   JetsonTransportStatusPayload,
 } from "./jetson_transport_payloads";
+import { createSampleJetsonStereoFramePayload } from "./jetson_transport_payloads";
 
 describe("JetsonWebSocketTransportClient", () => {
   afterEach(() => {
@@ -52,7 +55,6 @@ describe("JetsonWebSocketTransportClient", () => {
         return socket as unknown as WebSocket;
       },
     });
-
     await client.connect(createConfig());
     const firstSocket = sockets[0];
     firstSocket.emitOpen();
@@ -187,6 +189,65 @@ describe("JetsonWebSocketTransportClient", () => {
       "192.168.1.56:8090/jetson/messages",
     );
   });
+
+  it("drops superseded pending binary stereo frames and keeps only the latest one", async () => {
+    vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+
+    const target = new RecordingDispatchTarget();
+    const dispatcher = new JetsonMessageDispatcher(target);
+    const transportStatuses: JetsonTransportStatusPayload[] = [];
+    const transportErrors: JetsonTransportErrorPayload[] = [];
+    const sockets: FakeWebSocket[] = [];
+    const client = new JetsonWebSocketTransportClient({
+      dispatcher,
+      onTransportStatus: (payload) => {
+        transportStatuses.push(payload);
+      },
+      onTransportError: (payload) => {
+        transportErrors.push(payload);
+      },
+      createWebSocket: (url) => {
+        const socket = new FakeWebSocket(url);
+        sockets.push(socket);
+        return socket as unknown as WebSocket;
+      },
+    });
+
+    await client.connect(createConfig());
+    const socket = sockets[0];
+    socket.emitOpen();
+
+    let resolveFirstFrameArrayBuffer!: (buffer: ArrayBuffer) => void;
+    let signalFirstFrameArrayBufferRequest!: () => void;
+    const firstFrameArrayBufferRequested = new Promise<void>((resolve) => {
+      signalFirstFrameArrayBufferRequest = resolve;
+    });
+    const delayedFirstFrameBlob = new Blob([]);
+    Object.defineProperty(delayedFirstFrameBlob, "arrayBuffer", {
+      configurable: true,
+      value: () => {
+        signalFirstFrameArrayBufferRequest();
+        return new Promise<ArrayBuffer>((resolve) => {
+          resolveFirstFrameArrayBuffer = resolve;
+        });
+      },
+    });
+
+    socket.emitMessage(delayedFirstFrameBlob);
+    await firstFrameArrayBufferRequested;
+
+    socket.emitMessage(createBinaryStereoFrameMessage(2, 2));
+    socket.emitMessage(createBinaryStereoFrameMessage(3, 3));
+    await flushMicrotasks();
+
+    resolveFirstFrameArrayBuffer(toArrayBuffer(createBinaryStereoFrameMessage(1, 1)));
+    await flushMessageHandlingQueue(() => target.receivedFrameIds.length > 0);
+
+    expect(target.receivedFrameIds).toEqual([3]);
+    expect(target.receivedEnvelopeSequences).toEqual([3]);
+    expect(transportErrors).toEqual([]);
+    expect(getLast(transportStatuses)?.transportState).toBe("running");
+  });
 });
 
 class RecordingDispatchTarget implements JetsonMessageDispatchTarget {
@@ -195,6 +256,8 @@ class RecordingDispatchTarget implements JetsonMessageDispatchTarget {
   readonly receivedTransportStatuses: JetsonTransportStatusPayload[] = [];
 
   readonly receivedErrors: JetsonTransportErrorPayload[] = [];
+
+  readonly receivedFrameIds: number[] = [];
 
   recordEnvelopeReceipt(
     envelope: JetsonMessageEnvelope,
@@ -213,7 +276,9 @@ class RecordingDispatchTarget implements JetsonMessageDispatchTarget {
 
   ingestSourceStatusPayload(_payload: JetsonSourceStatusPayload): void {}
 
-  ingestFramePayload(_payload: JetsonStereoFramePayload): void {}
+  ingestFramePayload(payload: JetsonStereoFramePayload): void {
+    this.receivedFrameIds.push(payload.frameId);
+  }
 
   ingestError(payload: JetsonTransportErrorPayload): void {
     this.receivedErrors.push(payload);
@@ -306,6 +371,103 @@ async function flushMicrotasks(): Promise<void> {
   await Promise.resolve();
 }
 
+async function flushMessageHandlingQueue(
+  stopWhen: () => boolean,
+  attempts = 12,
+): Promise<void> {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    await flushMicrotasks();
+    if (stopWhen()) {
+      return;
+    }
+  }
+}
+
 function getLast<T>(values: readonly T[]): T | undefined {
   return values.length > 0 ? values[values.length - 1] : undefined;
+}
+
+function createBinaryStereoFrameMessage(
+  frameId: number,
+  sequence: number,
+): Uint8Array {
+  const leftBytes = new Uint8Array([frameId, frameId + 1, frameId + 2, frameId + 3]);
+  const rightBytes = new Uint8Array([
+    frameId + 4,
+    frameId + 5,
+    frameId + 6,
+    frameId + 7,
+    frameId + 8,
+  ]);
+  const sourcePayload = createSampleJetsonStereoFramePayload(
+    frameId,
+    "binary_queue_test_stream",
+  );
+
+  return createBinaryMessage({
+    envelope: buildStereoFrameEnvelope(
+      {
+        ...sourcePayload,
+        left: createBinaryEyePayload(sourcePayload.left, leftBytes.byteLength),
+        right: createBinaryEyePayload(sourcePayload.right, rightBytes.byteLength),
+      },
+      {
+        timestampMs: 1000 + frameId,
+        sequence,
+      },
+    ),
+    leftBytes,
+    rightBytes,
+  });
+}
+
+function createBinaryEyePayload(
+  eyePayload: JetsonEyeFramePayload,
+  byteSize: number,
+): JetsonEyeFramePayload {
+  return {
+    ...eyePayload,
+    image: undefined,
+    metadata: {
+      ...eyePayload.metadata,
+      mimeType: "image/jpeg",
+      byteSize,
+    },
+  };
+}
+
+function createBinaryMessage(options: {
+  readonly envelope: unknown;
+  readonly leftBytes: Uint8Array;
+  readonly rightBytes: Uint8Array;
+}): Uint8Array {
+  const headerBytes = new TextEncoder().encode(JSON.stringify(options.envelope));
+  const fixedHeaderSize = 20;
+  const output = new Uint8Array(
+    fixedHeaderSize +
+      headerBytes.byteLength +
+      options.leftBytes.byteLength +
+      options.rightBytes.byteLength,
+  );
+  const dataView = new DataView(output.buffer);
+
+  output.set(new TextEncoder().encode("JSBF"), 0);
+  dataView.setUint8(4, 1);
+  dataView.setUint8(5, 1);
+  dataView.setUint16(6, 0, false);
+  dataView.setUint32(8, headerBytes.byteLength, false);
+  dataView.setUint32(12, options.leftBytes.byteLength, false);
+  dataView.setUint32(16, options.rightBytes.byteLength, false);
+  output.set(headerBytes, fixedHeaderSize);
+  output.set(options.leftBytes, fixedHeaderSize + headerBytes.byteLength);
+  output.set(
+    options.rightBytes,
+    fixedHeaderSize + headerBytes.byteLength + options.leftBytes.byteLength,
+  );
+
+  return output;
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
 }

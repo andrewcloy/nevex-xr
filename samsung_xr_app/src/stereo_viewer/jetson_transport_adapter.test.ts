@@ -12,6 +12,8 @@ import {
 import { JetsonMessageDispatcher } from "./jetson_message_dispatcher";
 import { JetsonTransportAdapter } from "./jetson_transport_adapter";
 import {
+  JETSON_VIEWER_RECEIPT_MESSAGE_SIZE_BYTES_METADATA_KEY,
+  JETSON_VIEWER_RECEIPT_MESSAGE_TYPE_METADATA_KEY,
   createSampleJetsonCapabilitiesPayload,
   createSampleJetsonStereoFramePayload,
 } from "./jetson_transport_payloads";
@@ -240,6 +242,9 @@ describe("JetsonTransportAdapter", () => {
           sequence: 4,
         },
       ),
+      {
+        messageSizeBytes: 46080,
+      },
     );
 
     expect(capabilitiesResult.ok).toBe(true);
@@ -264,6 +269,16 @@ describe("JetsonTransportAdapter", () => {
     expect(statusSnapshot.transportLastMessageTimestampText).toBe(
       new Date(1003).toLocaleTimeString(),
     );
+    expect(
+      viewerSurface.getSnapshot().currentFrame?.metadata?.extras?.[
+        JETSON_VIEWER_RECEIPT_MESSAGE_TYPE_METADATA_KEY
+      ],
+    ).toBe("stereo_frame");
+    expect(
+      viewerSurface.getSnapshot().currentFrame?.metadata?.extras?.[
+        JETSON_VIEWER_RECEIPT_MESSAGE_SIZE_BYTES_METADATA_KEY
+      ],
+    ).toBe(46080);
 
     expect(diagnosticsSnapshot.senderNameText).toBe("jetson_app_xr_bridge");
     expect(diagnosticsSnapshot.sourceStreamNameText).toBe(

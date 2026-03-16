@@ -125,6 +125,7 @@ export interface StatusPanelSnapshot {
   readonly transportAdapterType: LiveTransportAdapterType;
   readonly transportAdapterDisplayName: string;
   readonly transportConnectionStatusText: string;
+  readonly transportLifecycleText: string;
   readonly transportStatusText: string;
   readonly transportHost: string;
   readonly transportPort: number;
@@ -482,6 +483,7 @@ export class StatusPanelController {
       transportAdapterType: settings.liveTransportAdapterType,
       transportAdapterDisplayName: settings.liveTransportAdapterDisplayName,
       transportConnectionStatusText: diagnostics.transportConnectionStatusText,
+      transportLifecycleText: diagnostics.transportLifecycleText,
       transportStatusText: diagnostics.transportStatusText,
       transportHost: settings.liveTransportConfig.host,
       transportPort: settings.liveTransportConfig.port,
@@ -575,6 +577,7 @@ export class StatusPanelController {
         `Media muted: ${settings.mediaMuted ? "Yes" : "No"}`,
         `Transport adapter: ${settings.liveTransportAdapterDisplayName}`,
         `Transport connection: ${diagnostics.transportConnectionStatusText}`,
+        `Transport lifecycle: ${diagnostics.transportLifecycleText}`,
         `Transport: ${diagnostics.transportStatusText}`,
         `Transport host: ${settings.liveTransportConfig.host}:${settings.liveTransportConfig.port}`,
         `Transport path: ${settings.liveTransportConfig.path}`,

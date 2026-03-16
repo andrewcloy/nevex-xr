@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SettingsStore } from "../settings_state/settings_store";
+import {
+  JETSON_VIEWER_RECEIPT_MESSAGE_SIZE_BYTES_METADATA_KEY,
+  JETSON_VIEWER_RECEIPT_MESSAGE_TYPE_METADATA_KEY,
+} from "../stereo_viewer/jetson_transport_payloads";
 import { DiagnosticsStore } from "./diagnostics_store";
 import type { ViewerSurfaceSnapshot } from "../stereo_viewer/viewer_surface";
 
@@ -41,6 +45,105 @@ describe("DiagnosticsStore", () => {
     expect(diagnosticsStore.getSnapshot().cameraTelemetry?.telemetryStaleThresholdMs).toBe(
       1000,
     );
+
+    diagnosticsStore.dispose();
+  });
+
+  it("treats live frame presentation as freshness evidence between source_status heartbeats", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-12T12:05:00.000Z"));
+
+    const settingsStore = new SettingsStore({
+      sourceMode: "live",
+    });
+    const diagnosticsStore = new DiagnosticsStore(settingsStore, {
+      staleThresholdMs: 1000,
+      pollIntervalMs: 100,
+    });
+    const initialNowMs = Date.now();
+
+    diagnosticsStore.recordViewerSnapshot({
+      ...createViewerSnapshot({
+        sourceState: "running",
+        captureHealthState: "healthy",
+        telemetryReceivedAtMs: initialNowMs,
+      }),
+      currentFrame: {
+        frameId: 1,
+        timestampMs: initialNowMs,
+        source: "live",
+        left: createFrameEye("left"),
+        right: createFrameEye("right"),
+      },
+    });
+
+    vi.advanceTimersByTime(900);
+
+    diagnosticsStore.recordViewerSnapshot({
+      ...createViewerSnapshot({
+        sourceState: "running",
+        captureHealthState: "healthy",
+        telemetryReceivedAtMs: initialNowMs,
+      }),
+      currentFrame: {
+        frameId: 2,
+        timestampMs: Date.now(),
+        source: "live",
+        left: createFrameEye("left"),
+        right: createFrameEye("right"),
+      },
+    });
+
+    expect(diagnosticsStore.getSnapshot().cameraTelemetry?.telemetryCurrent).toBe(true);
+    expect(diagnosticsStore.getSnapshot().sourceHealthState).toBe("healthy");
+
+    vi.advanceTimersByTime(900);
+
+    expect(diagnosticsStore.getSnapshot().cameraTelemetry?.telemetryCurrent).toBe(true);
+    expect(diagnosticsStore.getSnapshot().sourceHealthState).toBe("healthy");
+
+    vi.advanceTimersByTime(200);
+
+    expect(diagnosticsStore.getSnapshot().cameraTelemetry?.telemetryCurrent).toBe(false);
+    expect(diagnosticsStore.getSnapshot().sourceHealthState).toBe("telemetry_stale");
+
+    diagnosticsStore.dispose();
+  });
+
+  it("surfaces rendered stereo_frame receipt metadata before throttled transport status catches up", () => {
+    const settingsStore = new SettingsStore({
+      sourceMode: "live",
+      liveTransportLastMessageType: "capabilities",
+      liveTransportLastMessageSizeBytes: 1024,
+    });
+    const diagnosticsStore = new DiagnosticsStore(settingsStore);
+    const nowMs = Date.now();
+
+    diagnosticsStore.recordViewerSnapshot({
+      ...createViewerSnapshot({
+        sourceState: "running",
+        captureHealthState: "healthy",
+        telemetryReceivedAtMs: nowMs,
+      }),
+      currentFrame: {
+        frameId: 11,
+        timestampMs: nowMs,
+        source: "live",
+        metadata: {
+          extras: {
+            [JETSON_VIEWER_RECEIPT_MESSAGE_TYPE_METADATA_KEY]: "stereo_frame",
+            [JETSON_VIEWER_RECEIPT_MESSAGE_SIZE_BYTES_METADATA_KEY]: 46080,
+          },
+        },
+        left: createFrameEye("left"),
+        right: createFrameEye("right"),
+      },
+    });
+
+    expect(settingsStore.getSnapshot().liveTransportLastMessageType).toBe("capabilities");
+    expect(settingsStore.getSnapshot().liveTransportLastMessageSizeBytes).toBe(1024);
+    expect(diagnosticsStore.getSnapshot().transportLastMessageType).toBe("stereo_frame");
+    expect(diagnosticsStore.getSnapshot().transportLastMessageSizeBytes).toBe(46080);
 
     diagnosticsStore.dispose();
   });

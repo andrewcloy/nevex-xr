@@ -559,6 +559,84 @@ describe("StatusPanelController", () => {
     statusPanel.dispose();
     diagnosticsStore.dispose();
   });
+
+  it("shows transport lifecycle stages from connect through first frame and reconnect", () => {
+    const settingsStore = new SettingsStore({
+      sourceMode: "live",
+      liveTransportAdapterType: "jetson_stub",
+      liveTransportAdapterDisplayName: "Jetson WebSocket Transport Adapter",
+    });
+    const diagnosticsStore = new DiagnosticsStore(settingsStore);
+    const statusPanel = new StatusPanelController(
+      settingsStore,
+      diagnosticsStore,
+      createNoopActions(),
+    );
+
+    expect(statusPanel.getSnapshot().transportLifecycleText).toBe(
+      "Transport disconnected",
+    );
+
+    settingsStore.update({
+      liveTransportStatusState: "connecting",
+      liveTransportConnected: false,
+      liveTransportStatusText:
+        "Connecting WebSocket transport to ws://192.168.1.56:8090/jetson/messages...",
+    });
+    expect(statusPanel.getSnapshot().transportLifecycleText).toBe(
+      "Transport connecting",
+    );
+
+    settingsStore.update({
+      liveTransportStatusState: "running",
+      liveTransportConnected: true,
+      liveTransportStatusText:
+        "WebSocket transport connected to ws://192.168.1.56:8090/jetson/messages.",
+    });
+    expect(statusPanel.getSnapshot().transportLifecycleText).toBe("WebSocket open");
+
+    settingsStore.update({
+      liveTransportLastMessageType: "capabilities",
+      liveTransportLastMessageTimestampMs: Date.now(),
+    });
+    expect(statusPanel.getSnapshot().transportLifecycleText).toBe(
+      "Awaiting first frame",
+    );
+
+    diagnosticsStore.recordViewerSnapshot(
+      createViewerSnapshot("running", "healthy", Date.now(), {}, {
+        bridgeMode: "jetson_runtime_preview_bridge",
+      }),
+    );
+    expect(statusPanel.getSnapshot().transportLifecycleText).toBe(
+      "Receiving stereo_frame",
+    );
+    expect(statusPanel.getSnapshot().lines).toContain(
+      "Transport lifecycle: Receiving stereo_frame",
+    );
+
+    settingsStore.update({
+      liveTransportStatusState: "reconnecting",
+      liveTransportConnected: false,
+      liveTransportStatusText:
+        "WebSocket transport disconnected. Retrying in 1500 ms...",
+    });
+    expect(statusPanel.getSnapshot().transportLifecycleText).toBe(
+      "Retry scheduled (1500 ms)",
+    );
+
+    settingsStore.update({
+      liveTransportStatusState: "stopped",
+      liveTransportConnected: false,
+      liveTransportStatusText: "WebSocket transport disconnected.",
+    });
+    expect(statusPanel.getSnapshot().transportLifecycleText).toBe(
+      "WebSocket closed",
+    );
+
+    statusPanel.dispose();
+    diagnosticsStore.dispose();
+  });
 });
 
 function createNoopActions() {
