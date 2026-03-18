@@ -1,0 +1,1 @@
+No local vectorization tools detected. PNG assets remain the primary deliverable.

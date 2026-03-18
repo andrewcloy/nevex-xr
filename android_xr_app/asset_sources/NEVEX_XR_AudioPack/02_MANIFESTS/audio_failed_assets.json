@@ -1,0 +1,5 @@
+{
+  "generated_at_unix": 1773792924,
+  "failed_assets": [],
+  "rerun_command": "cd \"c:\\Users\\acloy\\Desktop\\NEVEX_XR_AudioPack\\05_TOOLS\" && python generate_audio_pack.py --only-failed"
+}

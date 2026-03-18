@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEVEX XR Audio Asset Preview</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>NEVEX XR Audio Asset Preview</h1>
+      <p>Generated WAV library with category grouping, waveform summaries, and direct playback.</p>
+    </div>
+  </header>
+  <main id="content" class="preview-main"></main>
+  <script>
+    const root = document.getElementById("content");
+    fetch("./audio_preview_manifest.json")
+      .then((r) => r.json())
+      .then((data) => {
+        data.sections.forEach((section) => {
+          const wrapper = document.createElement("section");
+          wrapper.className = "section";
+          wrapper.innerHTML = `<h2>${section.title}</h2><div class="stack"></div>`;
+          const stack = wrapper.querySelector(".stack");
+          section.items.forEach((item) => {
+            const card = document.createElement("article");
+            card.className = "card";
+            card.innerHTML = `
+              <div class="meta-row">
+                <div class="meta-block">
+                  <strong>${item.filename}</strong>
+                  <span>${item.category} · priority ${item.priority}</span>
+                  <em>${item.trigger}</em>
+                </div>
+                <div class="meta-block right">
+                  <img class="wave" src="${item.waveform}" alt="${item.filename} waveform" />
+                </div>
+              </div>
+              <audio controls preload="none" src="${item.src}"></audio>
+            `;
+            stack.appendChild(card);
+          });
+          root.appendChild(wrapper);
+        });
+      })
+      .catch((error) => {
+        root.innerHTML = `<section class="section"><h2>Preview unavailable</h2><p>${error}</p></section>`;
+      });
+  </script>
+</body>
+</html>

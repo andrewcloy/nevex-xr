@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEVEX XR Menu Architecture</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>NEVEX XR Menu Architecture</h1>
+      <p>Production-oriented XR hierarchy for a view-first advanced vision headset. The backbone stays stable, while operational modes change emphasis, HUD defaults, quick tools, alerts, capture behavior, and navigation support.</p>
+    </div>
+  </header>
+
+  <section class="usage architecture-grid">
+    <div class="usage-card">
+      <h2>Layer 1</h2>
+      <p><strong>Live HUD</strong><br />Battery, record state, current mode, zoom, and only contextual warnings.</p>
+    </div>
+    <div class="usage-card">
+      <h2>Layer 2</h2>
+      <p><strong>Quick Menu</strong><br />Brightness, gain/exposure, zoom, view mode, thermal blend, record, overlays, standby.</p>
+    </div>
+    <div class="usage-card">
+      <h2>Layer 3</h2>
+      <p><strong>Main Menu</strong><br />Vision, Thermal, Capture, Playback, Device, System, Advanced.</p>
+    </div>
+    <div class="usage-card">
+      <h2>Layer 4</h2>
+      <p><strong>Advanced / Service</strong><br />Calibration, diagnostics, service, recovery, developer tools.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Mode Model</h2>
+    <div class="architecture-list">
+      <article class="card">
+        <div class="meta">
+          <strong>Boot / Readiness</strong>
+          <span>Main mode select should route into mission behavior, not a second menu architecture.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Operational Modes</strong>
+          <span>Military / Threat, Hunting / Game, Inspection / Search, Navigation / Patrol, Review / Playback.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Shared Backbone</strong>
+          <span>Vision, Thermal, Capture, Playback, Device, System, Advanced remain stable in every mode.</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Main Menu</h2>
+    <div class="architecture-list">
+      <article class="card">
+        <div class="meta">
+          <strong>Vision</strong>
+          <span>Image, enhancement, overlays, mode</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Thermal</strong>
+          <span>Thermal view, palette, blend, hotspot</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Capture</strong>
+          <span>Photo, video, defaults, metadata</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Playback</strong>
+          <span>Recent, filter, actions</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Device</strong>
+          <span>Power, storage, sensors, input and fit</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>System</strong>
+          <span>Connectivity, profiles, notifications, privacy and UI</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Advanced</strong>
+          <span>Calibration, diagnostics, service, recovery, developer</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Mode Emphasis</h2>
+    <div class="architecture-list">
+      <article class="card">
+        <div class="meta">
+          <strong>Military / Threat</strong>
+          <span>Emphasize Vision, Thermal, Capture, disciplined alerts, threat markers, bearing, quick evidence capture.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Hunting / Game</strong>
+          <span>Emphasize Vision, Thermal, Capture, prey cues, outdoor overlays, trail-back and camp return support.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Inspection / Search</strong>
+          <span>Emphasize detail, thermal anomaly assist, annotation, documentation, breadcrumb return logic.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Navigation / Patrol</strong>
+          <span>Emphasize heading, waypoint, route, event marking, obstacle-safe overlays, thermal assist as secondary.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Review / Playback</strong>
+          <span>Emphasize recent files, tagged events, route review, export, protect, and delete workflows.</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Quick Menu Rules</h2>
+    <div class="architecture-list">
+      <article class="card">
+        <div class="meta">
+          <strong>Keep it to 6-8 items</strong>
+          <span>Quick controls should not become a mini settings dashboard.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Direct action first</strong>
+          <span>Prefer sliders, toggles, and segmented controls over deeper navigation.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Labels still matter</strong>
+          <span>Icons alone are acceptable in repeat-use quick controls, not in broad category navigation.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Mode-aware, not mode-chaotic</strong>
+          <span>Operational modes may swap one or two quick tools, but must not turn the quick menu into a mini settings app.</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Navigation Integration</h2>
+    <div class="architecture-list">
+      <article class="card">
+        <div class="meta">
+          <strong>Not a separate front door</strong>
+          <span>Navigation is integrated mainly through Vision overlays, plus quick tools, mode tools, Playback review, and System preferences.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Cross-mode capability</strong>
+          <span>Threat uses bearing and return cues, hunting uses trail-back, inspection uses breadcrumbs, patrol uses route logic, playback reviews paths later.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Stay glanceable</strong>
+          <span>Use quiet heading strips, waypoint cues, and breadcrumb hints. Avoid map-heavy live overlays.</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Icon Policy</h2>
+    <div class="architecture-list">
+      <article class="card">
+        <div class="meta">
+          <strong>Icons only</strong>
+          <span>HUD indicators, learned quick controls, contextual overlays.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Icons + labels</strong>
+          <span>Main menu categories, submenu rows, profiles, calibration, export, and advanced tools.</span>
+        </div>
+      </article>
+      <article class="card">
+        <div class="meta">
+          <strong>Deprioritized from top-level navigation</strong>
+          <span>Diagnostics, FPS, latency, target overlay states, and recovery indicators.</span>
+        </div>
+      </article>
+    </div>
+  </section>
+</body>
+</html>

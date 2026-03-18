@@ -1,0 +1,44 @@
+filename,category,priority,trigger,modes,duration_ms,path,procedural,style
+ui_click_soft.wav,ui,5,soft generic UI press or selection,global,85,03_ASSETS/audio/ui/ui_click_soft.wav,True,soft_click
+ui_back.wav,ui,5,back navigation action,global,95,03_ASSETS/audio/ui/ui_back.wav,True,back
+ui_focus_shift.wav,ui,5,focus moves between menu rows or tiles,global,75,03_ASSETS/audio/ui/ui_focus_shift.wav,True,focus
+ui_toggle_on.wav,ui,5,toggle enabled,global,105,03_ASSETS/audio/ui/ui_toggle_on.wav,True,toggle_on
+ui_toggle_off.wav,ui,5,toggle disabled,global,105,03_ASSETS/audio/ui/ui_toggle_off.wav,True,toggle_off
+ui_confirm.wav,ui,4,primary action confirmed,global,130,03_ASSETS/audio/ui/ui_confirm.wav,True,confirm
+ui_dismiss.wav,ui,5,dismiss close or cancel panel,global,90,03_ASSETS/audio/ui/ui_dismiss.wav,True,dismiss
+readiness_ready.wav,mode_state,4,system ready for operation,global,520,03_ASSETS/audio/mode_state/readiness_ready.wav,True,ready
+readiness_limited.wav,mode_state,2,system enters limited readiness state,global,520,03_ASSETS/audio/mode_state/readiness_limited.wav,True,ready_limited
+readiness_fault.wav,mode_state,1,system enters non-ready fault state,global,620,03_ASSETS/audio/mode_state/readiness_fault.wav,True,ready_fault
+boot_chime.wav,system,4,system boot complete,global,760,03_ASSETS/audio/system/boot_chime.wav,True,boot
+nightvision_activate.wav,system,4,night vision imaging channel activates during boot screen,global,520,03_ASSETS/audio/system/nightvision_activate.wav,True,nightvision_activate
+shutdown_chime.wav,system,4,system shutdown,global,700,03_ASSETS/audio/system/shutdown_chime.wav,True,shutdown
+reconnect.wav,system,3,critical link restored,global,220,03_ASSETS/audio/system/reconnect.wav,True,reconnect
+disconnect.wav,system,1,critical compute or sensor link lost,global,320,03_ASSETS/audio/system/disconnect.wav,True,disconnect
+detection_ping.wav,detection,2,new relevant detection appears,"military_threat,hunting_game,inspection_search",140,03_ASSETS/audio/detection/detection_ping.wav,True,detect_ping
+detection_confidence_high.wav,detection,2,high-confidence detection enters trackable state,"military_threat,hunting_game",190,03_ASSETS/audio/detection/detection_confidence_high.wav,True,detect_high
+target_lock.wav,detection,2,target enters stable lock or track state,"military_threat,hunting_game",230,03_ASSETS/audio/detection/target_lock.wav,True,lock
+target_lost.wav,detection,3,tracked target is lost,"military_threat,hunting_game",180,03_ASSETS/audio/detection/target_lost.wav,True,lost
+prey_detected.wav,detection,2,animal or prey detected in hunting mode,hunting_game,170,03_ASSETS/audio/detection/prey_detected.wav,True,prey_detect
+prey_reacquire.wav,detection,2,prey target reacquired after temporary loss,hunting_game,185,03_ASSETS/audio/detection/prey_reacquire.wav,True,prey_reacquire
+anomaly_mark.wav,detection,3,user marks anomaly or search finding,inspection_search,160,03_ASSETS/audio/detection/anomaly_mark.wav,True,anomaly_mark
+waypoint_set.wav,navigation,3,waypoint created or confirmed,"military_threat,hunting_game,inspection_search,navigation_patrol",180,03_ASSETS/audio/navigation/waypoint_set.wav,True,waypoint_set
+waypoint_arrival.wav,navigation,3,arrival at waypoint or destination threshold,"hunting_game,navigation_patrol,inspection_search",240,03_ASSETS/audio/navigation/waypoint_arrival.wav,True,arrival
+route_deviation.wav,navigation,1,route or patrol deviation crosses threshold,"navigation_patrol,military_threat",280,03_ASSETS/audio/navigation/route_deviation.wav,True,route_deviation
+return_path.wav,navigation,3,return path guidance toggled or emphasized,"military_threat,hunting_game,inspection_search,navigation_patrol",210,03_ASSETS/audio/navigation/return_path.wav,True,return_path
+heading_adjust.wav,navigation,3,heading correction cue during navigation-heavy modes,"navigation_patrol,military_threat",140,03_ASSETS/audio/navigation/heading_adjust.wav,True,heading_adjust
+capture_photo.wav,capture,4,photo captured,global,130,03_ASSETS/audio/capture/capture_photo.wav,True,photo
+record_start.wav,capture,4,recording starts,global,190,03_ASSETS/audio/capture/record_start.wav,True,record_start
+record_stop.wav,capture,4,recording stops,global,180,03_ASSETS/audio/capture/record_stop.wav,True,record_stop
+playback_open.wav,playback,4,enter playback or review mode,"review_playback,global",180,03_ASSETS/audio/playback/playback_open.wav,True,playback_open
+playback_select.wav,playback,5,select media item during playback review,"review_playback,global",95,03_ASSETS/audio/playback/playback_select.wav,True,playback_select
+warning_alert.wav,warnings,1,non-critical but urgent warning requiring awareness,global,380,03_ASSETS/audio/warnings/warning_alert.wav,True,warning
+critical_fault.wav,warnings,0,critical fault requiring immediate awareness,global,620,03_ASSETS/audio/warnings/critical_fault.wav,True,critical
+low_battery.wav,warnings,1,battery crosses low threshold,global,360,03_ASSETS/audio/warnings/low_battery.wav,True,low_battery
+storage_near_full.wav,warnings,1,storage approaches full threshold,global,330,03_ASSETS/audio/warnings/storage_near_full.wav,True,storage_near_full
+sensor_error.wav,warnings,0,major sensor failure or unavailable sensor state,global,500,03_ASSETS/audio/warnings/sensor_error.wav,True,sensor_error
+calibration_complete.wav,system,4,calibration completes successfully,global,260,03_ASSETS/audio/system/calibration_complete.wav,True,cal_complete
+calibration_fail.wav,system,1,calibration fails or exits invalid,global,360,03_ASSETS/audio/system/calibration_fail.wav,True,cal_fail
+standby_enter.wav,mode_state,4,enter standby mode,global,220,03_ASSETS/audio/mode_state/standby_enter.wav,True,standby_enter
+standby_exit.wav,mode_state,4,exit standby mode,global,220,03_ASSETS/audio/mode_state/standby_exit.wav,True,standby_exit
+blackout_enter.wav,mode_state,4,enter blackout or low-signature display-off mode,global,180,03_ASSETS/audio/mode_state/blackout_enter.wav,True,blackout_enter
+blackout_exit.wav,mode_state,4,exit blackout mode,global,190,03_ASSETS/audio/mode_state/blackout_exit.wav,True,blackout_exit

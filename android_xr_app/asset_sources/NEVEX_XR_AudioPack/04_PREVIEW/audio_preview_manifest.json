@@ -1,0 +1,388 @@
+{
+  "sections": [
+    {
+      "title": "Ui",
+      "items": [
+        {
+          "filename": "ui_click_soft.wav",
+          "category": "ui",
+          "priority": 5,
+          "trigger": "soft generic UI press or selection",
+          "src": "../03_ASSETS/audio/ui/ui_click_soft.wav",
+          "waveform": "../03_ASSETS/audio/preview/ui_click_soft.svg"
+        },
+        {
+          "filename": "ui_back.wav",
+          "category": "ui",
+          "priority": 5,
+          "trigger": "back navigation action",
+          "src": "../03_ASSETS/audio/ui/ui_back.wav",
+          "waveform": "../03_ASSETS/audio/preview/ui_back.svg"
+        },
+        {
+          "filename": "ui_focus_shift.wav",
+          "category": "ui",
+          "priority": 5,
+          "trigger": "focus moves between menu rows or tiles",
+          "src": "../03_ASSETS/audio/ui/ui_focus_shift.wav",
+          "waveform": "../03_ASSETS/audio/preview/ui_focus_shift.svg"
+        },
+        {
+          "filename": "ui_toggle_on.wav",
+          "category": "ui",
+          "priority": 5,
+          "trigger": "toggle enabled",
+          "src": "../03_ASSETS/audio/ui/ui_toggle_on.wav",
+          "waveform": "../03_ASSETS/audio/preview/ui_toggle_on.svg"
+        },
+        {
+          "filename": "ui_toggle_off.wav",
+          "category": "ui",
+          "priority": 5,
+          "trigger": "toggle disabled",
+          "src": "../03_ASSETS/audio/ui/ui_toggle_off.wav",
+          "waveform": "../03_ASSETS/audio/preview/ui_toggle_off.svg"
+        },
+        {
+          "filename": "ui_confirm.wav",
+          "category": "ui",
+          "priority": 4,
+          "trigger": "primary action confirmed",
+          "src": "../03_ASSETS/audio/ui/ui_confirm.wav",
+          "waveform": "../03_ASSETS/audio/preview/ui_confirm.svg"
+        },
+        {
+          "filename": "ui_dismiss.wav",
+          "category": "ui",
+          "priority": 5,
+          "trigger": "dismiss close or cancel panel",
+          "src": "../03_ASSETS/audio/ui/ui_dismiss.wav",
+          "waveform": "../03_ASSETS/audio/preview/ui_dismiss.svg"
+        }
+      ]
+    },
+    {
+      "title": "Mode_State",
+      "items": [
+        {
+          "filename": "readiness_ready.wav",
+          "category": "mode_state",
+          "priority": 4,
+          "trigger": "system ready for operation",
+          "src": "../03_ASSETS/audio/mode_state/readiness_ready.wav",
+          "waveform": "../03_ASSETS/audio/preview/readiness_ready.svg"
+        },
+        {
+          "filename": "readiness_limited.wav",
+          "category": "mode_state",
+          "priority": 2,
+          "trigger": "system enters limited readiness state",
+          "src": "../03_ASSETS/audio/mode_state/readiness_limited.wav",
+          "waveform": "../03_ASSETS/audio/preview/readiness_limited.svg"
+        },
+        {
+          "filename": "readiness_fault.wav",
+          "category": "mode_state",
+          "priority": 1,
+          "trigger": "system enters non-ready fault state",
+          "src": "../03_ASSETS/audio/mode_state/readiness_fault.wav",
+          "waveform": "../03_ASSETS/audio/preview/readiness_fault.svg"
+        },
+        {
+          "filename": "standby_enter.wav",
+          "category": "mode_state",
+          "priority": 4,
+          "trigger": "enter standby mode",
+          "src": "../03_ASSETS/audio/mode_state/standby_enter.wav",
+          "waveform": "../03_ASSETS/audio/preview/standby_enter.svg"
+        },
+        {
+          "filename": "standby_exit.wav",
+          "category": "mode_state",
+          "priority": 4,
+          "trigger": "exit standby mode",
+          "src": "../03_ASSETS/audio/mode_state/standby_exit.wav",
+          "waveform": "../03_ASSETS/audio/preview/standby_exit.svg"
+        },
+        {
+          "filename": "blackout_enter.wav",
+          "category": "mode_state",
+          "priority": 4,
+          "trigger": "enter blackout or low-signature display-off mode",
+          "src": "../03_ASSETS/audio/mode_state/blackout_enter.wav",
+          "waveform": "../03_ASSETS/audio/preview/blackout_enter.svg"
+        },
+        {
+          "filename": "blackout_exit.wav",
+          "category": "mode_state",
+          "priority": 4,
+          "trigger": "exit blackout mode",
+          "src": "../03_ASSETS/audio/mode_state/blackout_exit.wav",
+          "waveform": "../03_ASSETS/audio/preview/blackout_exit.svg"
+        }
+      ]
+    },
+    {
+      "title": "System",
+      "items": [
+        {
+          "filename": "boot_chime.wav",
+          "category": "system",
+          "priority": 4,
+          "trigger": "system boot complete",
+          "src": "../03_ASSETS/audio/system/boot_chime.wav",
+          "waveform": "../03_ASSETS/audio/preview/boot_chime.svg"
+        },
+        {
+          "filename": "nightvision_activate.wav",
+          "category": "system",
+          "priority": 4,
+          "trigger": "night vision imaging channel activates during boot screen",
+          "src": "../03_ASSETS/audio/system/nightvision_activate.wav",
+          "waveform": "../03_ASSETS/audio/preview/nightvision_activate.svg"
+        },
+        {
+          "filename": "shutdown_chime.wav",
+          "category": "system",
+          "priority": 4,
+          "trigger": "system shutdown",
+          "src": "../03_ASSETS/audio/system/shutdown_chime.wav",
+          "waveform": "../03_ASSETS/audio/preview/shutdown_chime.svg"
+        },
+        {
+          "filename": "reconnect.wav",
+          "category": "system",
+          "priority": 3,
+          "trigger": "critical link restored",
+          "src": "../03_ASSETS/audio/system/reconnect.wav",
+          "waveform": "../03_ASSETS/audio/preview/reconnect.svg"
+        },
+        {
+          "filename": "disconnect.wav",
+          "category": "system",
+          "priority": 1,
+          "trigger": "critical compute or sensor link lost",
+          "src": "../03_ASSETS/audio/system/disconnect.wav",
+          "waveform": "../03_ASSETS/audio/preview/disconnect.svg"
+        },
+        {
+          "filename": "calibration_complete.wav",
+          "category": "system",
+          "priority": 4,
+          "trigger": "calibration completes successfully",
+          "src": "../03_ASSETS/audio/system/calibration_complete.wav",
+          "waveform": "../03_ASSETS/audio/preview/calibration_complete.svg"
+        },
+        {
+          "filename": "calibration_fail.wav",
+          "category": "system",
+          "priority": 1,
+          "trigger": "calibration fails or exits invalid",
+          "src": "../03_ASSETS/audio/system/calibration_fail.wav",
+          "waveform": "../03_ASSETS/audio/preview/calibration_fail.svg"
+        }
+      ]
+    },
+    {
+      "title": "Detection",
+      "items": [
+        {
+          "filename": "detection_ping.wav",
+          "category": "detection",
+          "priority": 2,
+          "trigger": "new relevant detection appears",
+          "src": "../03_ASSETS/audio/detection/detection_ping.wav",
+          "waveform": "../03_ASSETS/audio/preview/detection_ping.svg"
+        },
+        {
+          "filename": "detection_confidence_high.wav",
+          "category": "detection",
+          "priority": 2,
+          "trigger": "high-confidence detection enters trackable state",
+          "src": "../03_ASSETS/audio/detection/detection_confidence_high.wav",
+          "waveform": "../03_ASSETS/audio/preview/detection_confidence_high.svg"
+        },
+        {
+          "filename": "target_lock.wav",
+          "category": "detection",
+          "priority": 2,
+          "trigger": "target enters stable lock or track state",
+          "src": "../03_ASSETS/audio/detection/target_lock.wav",
+          "waveform": "../03_ASSETS/audio/preview/target_lock.svg"
+        },
+        {
+          "filename": "target_lost.wav",
+          "category": "detection",
+          "priority": 3,
+          "trigger": "tracked target is lost",
+          "src": "../03_ASSETS/audio/detection/target_lost.wav",
+          "waveform": "../03_ASSETS/audio/preview/target_lost.svg"
+        },
+        {
+          "filename": "prey_detected.wav",
+          "category": "detection",
+          "priority": 2,
+          "trigger": "animal or prey detected in hunting mode",
+          "src": "../03_ASSETS/audio/detection/prey_detected.wav",
+          "waveform": "../03_ASSETS/audio/preview/prey_detected.svg"
+        },
+        {
+          "filename": "prey_reacquire.wav",
+          "category": "detection",
+          "priority": 2,
+          "trigger": "prey target reacquired after temporary loss",
+          "src": "../03_ASSETS/audio/detection/prey_reacquire.wav",
+          "waveform": "../03_ASSETS/audio/preview/prey_reacquire.svg"
+        },
+        {
+          "filename": "anomaly_mark.wav",
+          "category": "detection",
+          "priority": 3,
+          "trigger": "user marks anomaly or search finding",
+          "src": "../03_ASSETS/audio/detection/anomaly_mark.wav",
+          "waveform": "../03_ASSETS/audio/preview/anomaly_mark.svg"
+        }
+      ]
+    },
+    {
+      "title": "Navigation",
+      "items": [
+        {
+          "filename": "waypoint_set.wav",
+          "category": "navigation",
+          "priority": 3,
+          "trigger": "waypoint created or confirmed",
+          "src": "../03_ASSETS/audio/navigation/waypoint_set.wav",
+          "waveform": "../03_ASSETS/audio/preview/waypoint_set.svg"
+        },
+        {
+          "filename": "waypoint_arrival.wav",
+          "category": "navigation",
+          "priority": 3,
+          "trigger": "arrival at waypoint or destination threshold",
+          "src": "../03_ASSETS/audio/navigation/waypoint_arrival.wav",
+          "waveform": "../03_ASSETS/audio/preview/waypoint_arrival.svg"
+        },
+        {
+          "filename": "route_deviation.wav",
+          "category": "navigation",
+          "priority": 1,
+          "trigger": "route or patrol deviation crosses threshold",
+          "src": "../03_ASSETS/audio/navigation/route_deviation.wav",
+          "waveform": "../03_ASSETS/audio/preview/route_deviation.svg"
+        },
+        {
+          "filename": "return_path.wav",
+          "category": "navigation",
+          "priority": 3,
+          "trigger": "return path guidance toggled or emphasized",
+          "src": "../03_ASSETS/audio/navigation/return_path.wav",
+          "waveform": "../03_ASSETS/audio/preview/return_path.svg"
+        },
+        {
+          "filename": "heading_adjust.wav",
+          "category": "navigation",
+          "priority": 3,
+          "trigger": "heading correction cue during navigation-heavy modes",
+          "src": "../03_ASSETS/audio/navigation/heading_adjust.wav",
+          "waveform": "../03_ASSETS/audio/preview/heading_adjust.svg"
+        }
+      ]
+    },
+    {
+      "title": "Capture",
+      "items": [
+        {
+          "filename": "capture_photo.wav",
+          "category": "capture",
+          "priority": 4,
+          "trigger": "photo captured",
+          "src": "../03_ASSETS/audio/capture/capture_photo.wav",
+          "waveform": "../03_ASSETS/audio/preview/capture_photo.svg"
+        },
+        {
+          "filename": "record_start.wav",
+          "category": "capture",
+          "priority": 4,
+          "trigger": "recording starts",
+          "src": "../03_ASSETS/audio/capture/record_start.wav",
+          "waveform": "../03_ASSETS/audio/preview/record_start.svg"
+        },
+        {
+          "filename": "record_stop.wav",
+          "category": "capture",
+          "priority": 4,
+          "trigger": "recording stops",
+          "src": "../03_ASSETS/audio/capture/record_stop.wav",
+          "waveform": "../03_ASSETS/audio/preview/record_stop.svg"
+        }
+      ]
+    },
+    {
+      "title": "Playback",
+      "items": [
+        {
+          "filename": "playback_open.wav",
+          "category": "playback",
+          "priority": 4,
+          "trigger": "enter playback or review mode",
+          "src": "../03_ASSETS/audio/playback/playback_open.wav",
+          "waveform": "../03_ASSETS/audio/preview/playback_open.svg"
+        },
+        {
+          "filename": "playback_select.wav",
+          "category": "playback",
+          "priority": 5,
+          "trigger": "select media item during playback review",
+          "src": "../03_ASSETS/audio/playback/playback_select.wav",
+          "waveform": "../03_ASSETS/audio/preview/playback_select.svg"
+        }
+      ]
+    },
+    {
+      "title": "Warnings",
+      "items": [
+        {
+          "filename": "warning_alert.wav",
+          "category": "warnings",
+          "priority": 1,
+          "trigger": "non-critical but urgent warning requiring awareness",
+          "src": "../03_ASSETS/audio/warnings/warning_alert.wav",
+          "waveform": "../03_ASSETS/audio/preview/warning_alert.svg"
+        },
+        {
+          "filename": "critical_fault.wav",
+          "category": "warnings",
+          "priority": 0,
+          "trigger": "critical fault requiring immediate awareness",
+          "src": "../03_ASSETS/audio/warnings/critical_fault.wav",
+          "waveform": "../03_ASSETS/audio/preview/critical_fault.svg"
+        },
+        {
+          "filename": "low_battery.wav",
+          "category": "warnings",
+          "priority": 1,
+          "trigger": "battery crosses low threshold",
+          "src": "../03_ASSETS/audio/warnings/low_battery.wav",
+          "waveform": "../03_ASSETS/audio/preview/low_battery.svg"
+        },
+        {
+          "filename": "storage_near_full.wav",
+          "category": "warnings",
+          "priority": 1,
+          "trigger": "storage approaches full threshold",
+          "src": "../03_ASSETS/audio/warnings/storage_near_full.wav",
+          "waveform": "../03_ASSETS/audio/preview/storage_near_full.svg"
+        },
+        {
+          "filename": "sensor_error.wav",
+          "category": "warnings",
+          "priority": 0,
+          "trigger": "major sensor failure or unavailable sensor state",
+          "src": "../03_ASSETS/audio/warnings/sensor_error.wav",
+          "waveform": "../03_ASSETS/audio/preview/sensor_error.svg"
+        }
+      ]
+    }
+  ]
+}

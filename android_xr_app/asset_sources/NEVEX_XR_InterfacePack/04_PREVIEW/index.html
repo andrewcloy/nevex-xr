@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEVEX XR Interface Pack Preview</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <h1>NEVEX XR Interface Pack</h1>
+      <p>Preview of generated assets, theme swatches, and usage groupings for HUD and tile/menu surfaces.</p>
+    </div>
+  </header>
+
+  <section class="usage">
+    <div class="usage-card">
+      <h2>Revised Menu Architecture</h2>
+      <p>The pack now includes a production-oriented XR menu revision with a tighter four-layer model, a seven-category main menu, and mission-aware operational modes layered over the shared backbone.</p>
+      <p><a class="preview-link" href="./menu_architecture.html">Open menu architecture preview</a></p>
+    </div>
+    <div class="usage-card">
+      <h2>Key Direction</h2>
+      <p>Use the pack as a controlled design system, not as a floating dashboard of equal icons. Labels are required in menu navigation, and modes should change emphasis without creating a second menu tree.</p>
+    </div>
+  </section>
+
+  <section class="swatches" id="swatches"></section>
+  <section class="usage">
+    <div class="usage-card">
+      <h2>HUD / Live View</h2>
+      <p>Prefer glyph icons, sparse layout, edge-safe placement, and minimal persistent clutter.</p>
+    </div>
+    <div class="usage-card">
+      <h2>Menus / Panels</h2>
+      <p>Prefer tile icons for browseable settings, profile entry points, and quick control surfaces.</p>
+    </div>
+  </section>
+
+  <main id="content"></main>
+
+  <script>
+    const swatchesRoot = document.getElementById("swatches");
+    const contentRoot = document.getElementById("content");
+
+    fetch("./preview_manifest.json")
+      .then((r) => r.json())
+      .then((data) => {
+        Object.entries(data.theme.color).forEach(([name, value]) => {
+          const item = document.createElement("div");
+          item.className = "swatch";
+          item.innerHTML = `<div class="chip" style="background:${value}"></div><strong>${name}</strong><span>${value}</span>`;
+          swatchesRoot.appendChild(item);
+        });
+
+        data.sections.forEach((section) => {
+          const wrapper = document.createElement("section");
+          wrapper.className = "section";
+          wrapper.innerHTML = `<h2>${section.title}</h2><div class="grid"></div>`;
+          const grid = wrapper.querySelector(".grid");
+
+          section.items.forEach((item) => {
+            const card = document.createElement("article");
+            card.className = "card";
+            card.innerHTML = `
+              <div class="thumb-wrap">
+                <img class="thumb" src="${item.src}" alt="${item.name}" loading="lazy" />
+              </div>
+              <div class="meta">
+                <strong>${item.name}</strong>
+                <span>${item.family}</span>
+                <em>${item.category}</em>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+
+          contentRoot.appendChild(wrapper);
+        });
+      })
+      .catch((error) => {
+        contentRoot.innerHTML = `<section class="section"><h2>Preview unavailable</h2><p>${error}</p></section>`;
+      });
+  </script>
+</body>
+</html>

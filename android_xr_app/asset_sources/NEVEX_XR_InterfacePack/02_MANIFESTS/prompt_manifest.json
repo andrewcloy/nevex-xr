@@ -1,0 +1,797 @@
+{
+  "pack_name": "NEVEX_XR_InterfacePack",
+  "source_prompt_directory": "03_ASSETS/source_prompts",
+  "variants": [
+    {
+      "asset_name": "power",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/power__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/power.png"
+    },
+    {
+      "asset_name": "power",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/power__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/power.png"
+    },
+    {
+      "asset_name": "quick_settings",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/quick_settings__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/quick_settings.png"
+    },
+    {
+      "asset_name": "quick_settings",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/quick_settings__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/quick_settings.png"
+    },
+    {
+      "asset_name": "menu",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/menu__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/menu.png"
+    },
+    {
+      "asset_name": "menu",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/menu__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/menu.png"
+    },
+    {
+      "asset_name": "back",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/back__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/back.png"
+    },
+    {
+      "asset_name": "close",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/close__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/close.png"
+    },
+    {
+      "asset_name": "confirm",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/confirm__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/confirm.png"
+    },
+    {
+      "asset_name": "save",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/save__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/save.png"
+    },
+    {
+      "asset_name": "reset",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/reset__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/reset.png"
+    },
+    {
+      "asset_name": "settings",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/settings__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/settings.png"
+    },
+    {
+      "asset_name": "settings",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/settings__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/settings.png"
+    },
+    {
+      "asset_name": "profiles",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/profiles__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/profiles.png"
+    },
+    {
+      "asset_name": "profiles",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/profiles__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/profiles.png"
+    },
+    {
+      "asset_name": "diagnostics",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/diagnostics__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/diagnostics.png"
+    },
+    {
+      "asset_name": "diagnostics",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/diagnostics__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/diagnostics.png"
+    },
+    {
+      "asset_name": "visible_lowlight",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/visible_lowlight__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/visible_lowlight.png"
+    },
+    {
+      "asset_name": "visible_lowlight",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/visible_lowlight__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/visible_lowlight.png"
+    },
+    {
+      "asset_name": "thermal",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/thermal__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/thermal.png"
+    },
+    {
+      "asset_name": "thermal",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/thermal__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/thermal.png"
+    },
+    {
+      "asset_name": "fusion",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/fusion__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/fusion.png"
+    },
+    {
+      "asset_name": "fusion",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/fusion__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/fusion.png"
+    },
+    {
+      "asset_name": "edge_enhance",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/edge_enhance__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/edge_enhance.png"
+    },
+    {
+      "asset_name": "edge_enhance",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/edge_enhance__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/edge_enhance.png"
+    },
+    {
+      "asset_name": "nav_safe",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/nav_safe__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/nav_safe.png"
+    },
+    {
+      "asset_name": "nav_safe",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/nav_safe__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/nav_safe.png"
+    },
+    {
+      "asset_name": "ir_on",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/ir_on__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/ir_on.png"
+    },
+    {
+      "asset_name": "ir_on",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/ir_on__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/ir_on.png"
+    },
+    {
+      "asset_name": "ir_off",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/ir_off__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/ir_off.png"
+    },
+    {
+      "asset_name": "ir_off",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/ir_off__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/ir_off.png"
+    },
+    {
+      "asset_name": "brightness",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/brightness__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/brightness.png"
+    },
+    {
+      "asset_name": "brightness",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/brightness__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/brightness.png"
+    },
+    {
+      "asset_name": "gain",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/gain__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/gain.png"
+    },
+    {
+      "asset_name": "gain",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/gain__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/gain.png"
+    },
+    {
+      "asset_name": "exposure",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/exposure__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/exposure.png"
+    },
+    {
+      "asset_name": "exposure",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/exposure__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/exposure.png"
+    },
+    {
+      "asset_name": "contrast",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/contrast__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/contrast.png"
+    },
+    {
+      "asset_name": "contrast",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/contrast__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/contrast.png"
+    },
+    {
+      "asset_name": "zoom",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/zoom__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/zoom.png"
+    },
+    {
+      "asset_name": "zoom",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/zoom__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/zoom.png"
+    },
+    {
+      "asset_name": "focus",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/focus__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/focus.png"
+    },
+    {
+      "asset_name": "focus",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/focus__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/focus.png"
+    },
+    {
+      "asset_name": "detection_on",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/detection_on__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/detection_on.png"
+    },
+    {
+      "asset_name": "detection_on",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/detection_on__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/detection_on.png"
+    },
+    {
+      "asset_name": "detection_off",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/detection_off__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/detection_off.png"
+    },
+    {
+      "asset_name": "detection_off",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/detection_off__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/detection_off.png"
+    },
+    {
+      "asset_name": "target_box",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/target_box__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/target_box.png"
+    },
+    {
+      "asset_name": "reticle_center",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/reticle_center__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/reticle_center.png"
+    },
+    {
+      "asset_name": "target_lock",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/target_lock__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/target_lock.png"
+    },
+    {
+      "asset_name": "person_detect",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/person_detect__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/person_detect.png"
+    },
+    {
+      "asset_name": "animal_detect",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/animal_detect__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/animal_detect.png"
+    },
+    {
+      "asset_name": "hotspot",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/hotspot__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/hotspot.png"
+    },
+    {
+      "asset_name": "record",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/record__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/record.png"
+    },
+    {
+      "asset_name": "record",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/record__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/record.png"
+    },
+    {
+      "asset_name": "snapshot",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/snapshot__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/snapshot.png"
+    },
+    {
+      "asset_name": "snapshot",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/snapshot__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/snapshot.png"
+    },
+    {
+      "asset_name": "playback",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/playback__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/playback.png"
+    },
+    {
+      "asset_name": "playback",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/playback__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/playback.png"
+    },
+    {
+      "asset_name": "export",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/export__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/export.png"
+    },
+    {
+      "asset_name": "export",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/export__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/export.png"
+    },
+    {
+      "asset_name": "battery",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/battery__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/battery.png"
+    },
+    {
+      "asset_name": "battery",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/battery__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/battery.png"
+    },
+    {
+      "asset_name": "charging",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/charging__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/charging.png"
+    },
+    {
+      "asset_name": "charging",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/charging__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/charging.png"
+    },
+    {
+      "asset_name": "wifi_link",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/wifi_link__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/wifi_link.png"
+    },
+    {
+      "asset_name": "wifi_link",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/wifi_link__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/wifi_link.png"
+    },
+    {
+      "asset_name": "jetson_link",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/jetson_link__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/jetson_link.png"
+    },
+    {
+      "asset_name": "jetson_link",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/jetson_link__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/jetson_link.png"
+    },
+    {
+      "asset_name": "reconnecting",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/reconnecting__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/reconnecting.png"
+    },
+    {
+      "asset_name": "reconnecting",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/reconnecting__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/reconnecting.png"
+    },
+    {
+      "asset_name": "storage",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/storage__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/storage.png"
+    },
+    {
+      "asset_name": "storage",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/storage__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/storage.png"
+    },
+    {
+      "asset_name": "overheat",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/overheat__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/overheat.png"
+    },
+    {
+      "asset_name": "overheat",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/overheat__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/overheat.png"
+    },
+    {
+      "asset_name": "warning",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/warning__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/warning.png"
+    },
+    {
+      "asset_name": "warning",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/warning__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/warning.png"
+    },
+    {
+      "asset_name": "critical",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/critical__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/critical.png"
+    },
+    {
+      "asset_name": "critical",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/critical__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/critical.png"
+    },
+    {
+      "asset_name": "fps",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/fps__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/fps.png"
+    },
+    {
+      "asset_name": "latency",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/latency__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/latency.png"
+    },
+    {
+      "asset_name": "calibration",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/calibration__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/calibration.png"
+    },
+    {
+      "asset_name": "calibration",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/calibration__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/calibration.png"
+    },
+    {
+      "asset_name": "stereo_align",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/stereo_align__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/stereo_align.png"
+    },
+    {
+      "asset_name": "thermal_align",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/thermal_align__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/thermal_align.png"
+    },
+    {
+      "asset_name": "recenter",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/recenter__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/recenter.png"
+    },
+    {
+      "asset_name": "recenter",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/recenter__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/recenter.png"
+    },
+    {
+      "asset_name": "compass",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/compass__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/compass.png"
+    },
+    {
+      "asset_name": "compass",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/compass__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/compass.png"
+    },
+    {
+      "asset_name": "waypoint",
+      "family": "glyph",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/waypoint__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/waypoint.png"
+    },
+    {
+      "asset_name": "waypoint",
+      "family": "tile",
+      "priority": "P0",
+      "prompt_file": "03_ASSETS/source_prompts/waypoint__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/waypoint.png"
+    },
+    {
+      "asset_name": "tactical_profile_card",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/tactical_profile_card__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/tactical_profile_card.png"
+    },
+    {
+      "asset_name": "hunter_profile_card",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/hunter_profile_card__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/hunter_profile_card.png"
+    },
+    {
+      "asset_name": "police_profile_card",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/police_profile_card__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/police_profile_card.png"
+    },
+    {
+      "asset_name": "sar_profile_card",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/sar_profile_card__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/sar_profile_card.png"
+    },
+    {
+      "asset_name": "recreational_profile_card",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/recreational_profile_card__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/recreational_profile_card.png"
+    },
+    {
+      "asset_name": "signal_quality",
+      "family": "glyph",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/signal_quality__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/signal_quality.png"
+    },
+    {
+      "asset_name": "signal_quality",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/signal_quality__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/signal_quality.png"
+    },
+    {
+      "asset_name": "palette_white_hot",
+      "family": "glyph",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/palette_white_hot__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/palette_white_hot.png"
+    },
+    {
+      "asset_name": "palette_white_hot",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/palette_white_hot__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/palette_white_hot.png"
+    },
+    {
+      "asset_name": "palette_black_hot",
+      "family": "glyph",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/palette_black_hot__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/palette_black_hot.png"
+    },
+    {
+      "asset_name": "palette_black_hot",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/palette_black_hot__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/palette_black_hot.png"
+    },
+    {
+      "asset_name": "thermal_blend",
+      "family": "glyph",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/thermal_blend__glyph.txt",
+      "output_path": "03_ASSETS/png/glyph_icons/thermal_blend.png"
+    },
+    {
+      "asset_name": "thermal_blend",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/thermal_blend__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/thermal_blend.png"
+    },
+    {
+      "asset_name": "alert_link_lost",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/alert_link_lost__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/alert_link_lost.png"
+    },
+    {
+      "asset_name": "alert_low_battery",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/alert_low_battery__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/alert_low_battery.png"
+    },
+    {
+      "asset_name": "alert_recording",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/alert_recording__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/alert_recording.png"
+    },
+    {
+      "asset_name": "alert_sensor_fault",
+      "family": "tile",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/alert_sensor_fault__tile.txt",
+      "output_path": "03_ASSETS/png/tile_icons/alert_sensor_fault.png"
+    },
+    {
+      "asset_name": "low_light_panel_shell",
+      "family": "panel",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/low_light_panel_shell__panel.txt",
+      "output_path": "03_ASSETS/png/panels/low_light_panel_shell.png"
+    },
+    {
+      "asset_name": "thermal_panel_shell",
+      "family": "panel",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/thermal_panel_shell__panel.txt",
+      "output_path": "03_ASSETS/png/panels/thermal_panel_shell.png"
+    },
+    {
+      "asset_name": "detection_panel_shell",
+      "family": "panel",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/detection_panel_shell__panel.txt",
+      "output_path": "03_ASSETS/png/panels/detection_panel_shell.png"
+    },
+    {
+      "asset_name": "quick_controls_panel_shell",
+      "family": "panel",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/quick_controls_panel_shell__panel.txt",
+      "output_path": "03_ASSETS/png/panels/quick_controls_panel_shell.png"
+    },
+    {
+      "asset_name": "device_status_panel_shell",
+      "family": "panel",
+      "priority": "P1",
+      "prompt_file": "03_ASSETS/source_prompts/device_status_panel_shell__panel.txt",
+      "output_path": "03_ASSETS/png/panels/device_status_panel_shell.png"
+    }
+  ]
+}

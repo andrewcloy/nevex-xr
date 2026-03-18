@@ -1,0 +1,46 @@
+{
+  "pack_name": "NEVEX_XR_AudioPack",
+  "defaults": {
+    "sample_rate_hz": 48000,
+    "bit_depth": 16,
+    "channels": 2,
+    "peak_normalization_dbfs": -3.0,
+    "loudness_guidance": {
+      "headset_target_short_ui_lufs": -24,
+      "headset_target_alert_lufs": -20,
+      "notes": "Use conservative loudness for headset comfort. Critical alerts may sit above confirms but should avoid sharp harshness."
+    },
+    "rendering_rules": {
+      "max_reverb_ms": 45,
+      "default_reverb_ms": 0,
+      "default_fade_in_ms": 4,
+      "default_fade_out_ms": 22,
+      "highpass_for_alerts_hz": 110,
+      "avoid_harsh_highs_above_hz": 6500
+    }
+  },
+  "preview_sections": [
+    {
+      "title": "Architecture",
+      "items": [
+        "UI",
+        "Detection",
+        "Navigation",
+        "Warnings",
+        "System State",
+        "Capture / Playback",
+        "Mode / Readiness"
+      ]
+    },
+    {
+      "title": "Operational Modes",
+      "items": [
+        "Military / Threat",
+        "Hunting / Game",
+        "Inspection / Search",
+        "Navigation / Patrol",
+        "Review / Playback"
+      ]
+    }
+  ]
+}

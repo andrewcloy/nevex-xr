@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "pack_name": "NEVEX_XR_InterfacePack",
+    "intent": "Desktop handoff package for NEVEX XR in-app interface assets and integration planning."
+  },
+  "color": {
+    "bg_0": "#06090E",
+    "bg_1": "#0B121A",
+    "panel": "#101A26",
+    "panel_edge": "#173042",
+    "primary_cyan": "#5EE7FF",
+    "active_blue": "#1FA7FF",
+    "text_main": "#EAF7FF",
+    "text_muted": "#8FA9BA",
+    "warning": "#FFB24C",
+    "danger": "#FF4D57",
+    "success": "#58E38C",
+    "thermal_white_hot": "#FFF4BF",
+    "thermal_mid_hot": "#FFC54D",
+    "thermal_hot": "#FF7A2F",
+    "thermal_critical": "#FF3B30"
+  },
+  "radius": {
+    "icon_tile": 224,
+    "panel_large": 36,
+    "panel_small": 24,
+    "pill": 999
+  },
+  "stroke": {
+    "glyph_heavy": 72,
+    "glyph_medium": 56,
+    "panel_outline": 4
+  },
+  "glow": {
+    "strength_default": 0.22,
+    "strength_focus": 0.32,
+    "strength_warning": 0.18,
+    "rule": "Use restrained cyan edge glow. Avoid bloom-heavy sci-fi styling."
+  },
+  "spacing": {
+    "hud_min_gap_dp": 20,
+    "hud_safe_margin_percent": 0.08,
+    "icon_safe_margin_percent": 0.18,
+    "panel_inner_padding_dp": 20
+  },
+  "typography": {
+    "direction": "Use a simple, squared sans family later in app integration. Keep labels outside icon art."
+  }
+}

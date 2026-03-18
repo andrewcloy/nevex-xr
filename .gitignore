@@ -18,6 +18,12 @@ Desktop.ini
 **/coverage/
 *.tsbuildinfo
 
+# Android / Gradle
+**/.gradle/
+**/local.properties
+*.apk
+*.aab
+
 # Python
 **/__pycache__/
 **/*.pyc

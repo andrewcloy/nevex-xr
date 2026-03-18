@@ -1,0 +1,925 @@
+{
+  "pack_name": "NEVEX_XR_InterfacePack",
+  "naming": "snake_case",
+  "theme_tokens": "02_MANIFESTS/theme_tokens.json",
+  "generation_manifest": "02_MANIFESTS/generation_manifest.json",
+  "prompt_manifest": "02_MANIFESTS/prompt_manifest.json",
+  "categories": {
+    "core_system": [
+      "power",
+      "quick_settings",
+      "menu",
+      "back",
+      "close",
+      "confirm",
+      "save",
+      "reset",
+      "settings",
+      "profiles",
+      "diagnostics"
+    ],
+    "viewing_modes": [
+      "visible_lowlight",
+      "thermal",
+      "fusion",
+      "edge_enhance",
+      "nav_safe"
+    ],
+    "sensor_controls": [
+      "ir_on",
+      "ir_off",
+      "brightness",
+      "gain",
+      "exposure",
+      "contrast",
+      "zoom",
+      "focus"
+    ],
+    "detection_target": [
+      "detection_on",
+      "detection_off",
+      "target_box",
+      "reticle_center",
+      "target_lock",
+      "person_detect",
+      "animal_detect",
+      "hotspot"
+    ],
+    "recording_media": [
+      "record",
+      "snapshot",
+      "playback",
+      "export"
+    ],
+    "status": [
+      "battery",
+      "charging",
+      "wifi_link",
+      "jetson_link",
+      "reconnecting",
+      "storage",
+      "overheat",
+      "warning",
+      "critical",
+      "fps",
+      "latency"
+    ],
+    "calibration": [
+      "calibration",
+      "stereo_align",
+      "thermal_align",
+      "recenter"
+    ],
+    "navigation_support": [
+      "compass",
+      "waypoint"
+    ],
+    "profile_cards": [
+      "tactical_profile_card",
+      "hunter_profile_card",
+      "police_profile_card",
+      "sar_profile_card",
+      "recreational_profile_card"
+    ],
+    "thermal_support": [
+      "signal_quality",
+      "palette_white_hot",
+      "palette_black_hot",
+      "thermal_blend"
+    ],
+    "alert_cards": [
+      "alert_link_lost",
+      "alert_low_battery",
+      "alert_recording",
+      "alert_sensor_fault"
+    ],
+    "panel_shells": [
+      "low_light_panel_shell",
+      "thermal_panel_shell",
+      "detection_panel_shell",
+      "quick_controls_panel_shell",
+      "device_status_panel_shell"
+    ]
+  },
+  "assets": [
+    {
+      "name": "power",
+      "category": "core_system",
+      "concept": "power standby ring with short top notch",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "quick_settings",
+      "category": "core_system",
+      "concept": "compact slider cluster for fast controls",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "menu",
+      "category": "core_system",
+      "concept": "three balanced horizontal control bars",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "back",
+      "category": "core_system",
+      "concept": "clean left-pointing return arrow",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "close",
+      "category": "core_system",
+      "concept": "rounded heavy close X",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "confirm",
+      "category": "core_system",
+      "concept": "clean rounded approval checkmark",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "save",
+      "category": "core_system",
+      "concept": "simple save tray with downward motion",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "reset",
+      "category": "core_system",
+      "concept": "clockwise reset arrow with circular motion",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "settings",
+      "category": "core_system",
+      "concept": "simplified gear with broad teeth",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "profiles",
+      "category": "core_system",
+      "concept": "stacked user profile layers or grouped user silhouettes",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "diagnostics",
+      "category": "core_system",
+      "concept": "clean diagnostic waveform inside a rounded frame",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "visible_lowlight",
+      "category": "viewing_modes",
+      "concept": "wide eye aperture with low-light crescent cue",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "thermal",
+      "category": "viewing_modes",
+      "concept": "thermal vision aperture with contained hotspot core",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "fusion",
+      "category": "viewing_modes",
+      "concept": "two overlapping sensor layers merging into one view",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "edge_enhance",
+      "category": "viewing_modes",
+      "concept": "clean object contour edges with emphasis lines",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "nav_safe",
+      "category": "viewing_modes",
+      "concept": "protected path channel or corridor guide",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "ir_on",
+      "category": "sensor_controls",
+      "concept": "infrared emitter waves active",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "ir_off",
+      "category": "sensor_controls",
+      "concept": "infrared emitter disabled with restrained strike cue",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "brightness",
+      "category": "sensor_controls",
+      "concept": "brightness circle or sun with thick rays",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "gain",
+      "category": "sensor_controls",
+      "concept": "signal gain ramp rising upward",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "exposure",
+      "category": "sensor_controls",
+      "concept": "camera exposure aperture split into light and dark halves",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "contrast",
+      "category": "sensor_controls",
+      "concept": "high-contrast half-circle or split-tone disc",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "zoom",
+      "category": "sensor_controls",
+      "concept": "magnification lens with clean plus cue",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "focus",
+      "category": "sensor_controls",
+      "concept": "centered lens focus brackets converging inward",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "detection_on",
+      "category": "detection_target",
+      "concept": "active detection scan frame",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "detection_off",
+      "category": "detection_target",
+      "concept": "disabled detection scan frame with clean strike cue",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "target_box",
+      "category": "detection_target",
+      "concept": "four-corner target tracking box",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "reticle_center",
+      "category": "detection_target",
+      "concept": "precise centered reticle mark",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "target_lock",
+      "category": "detection_target",
+      "concept": "locked target brackets closing around center",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "person_detect",
+      "category": "detection_target",
+      "concept": "human silhouette inside detection frame",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "animal_detect",
+      "category": "detection_target",
+      "concept": "generic four-legged animal silhouette inside detection frame",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "hotspot",
+      "category": "detection_target",
+      "concept": "contained thermal hotspot pulse",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "record",
+      "category": "recording_media",
+      "concept": "solid recording circle",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "snapshot",
+      "category": "recording_media",
+      "concept": "camera frame with capture pulse",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "playback",
+      "category": "recording_media",
+      "concept": "rounded play triangle with stable frame",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "export",
+      "category": "recording_media",
+      "concept": "outbound share arrow leaving a tray",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "battery",
+      "category": "status",
+      "concept": "battery capsule charge level",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "charging",
+      "category": "status",
+      "concept": "battery with centered lightning cue",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "wifi_link",
+      "category": "status",
+      "concept": "wireless link arcs",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "jetson_link",
+      "category": "status",
+      "concept": "device-to-module link bridge for headset to compute unit",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "reconnecting",
+      "category": "status",
+      "concept": "link refresh arrows reconnecting",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "storage",
+      "category": "status",
+      "concept": "storage stack or rugged memory module",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "overheat",
+      "category": "status",
+      "concept": "heat warning with contained thermal wave",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "warning",
+      "category": "status",
+      "concept": "operational warning triangle with rounded geometry",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "critical",
+      "category": "status",
+      "concept": "critical fault icon with strong alert center",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "fps",
+      "category": "status",
+      "concept": "frame cadence bars or speed meter without letters",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "latency",
+      "category": "status",
+      "concept": "signal delay waveform with offset echo",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "calibration",
+      "category": "calibration",
+      "concept": "calibration grid with centered alignment point",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "stereo_align",
+      "category": "calibration",
+      "concept": "two aligned optical circles converging",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "thermal_align",
+      "category": "calibration",
+      "concept": "layered visible and thermal registration marks",
+      "families": [
+        "glyph"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "recenter",
+      "category": "calibration",
+      "concept": "recentering compass or axis returning to center",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "compass",
+      "category": "navigation_support",
+      "concept": "clean operational compass pointer",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph",
+        "tile"
+      ]
+    },
+    {
+      "name": "waypoint",
+      "category": "navigation_support",
+      "concept": "route marker with precise destination pin",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": [
+        "glyph"
+      ]
+    },
+    {
+      "name": "tactical_profile_card",
+      "category": "profile_cards",
+      "concept": "dark profile card emphasizing disciplined minimal overlays",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "hunter_profile_card",
+      "category": "profile_cards",
+      "concept": "dark profile card emphasizing animal detection and low-light scanning",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "police_profile_card",
+      "category": "profile_cards",
+      "concept": "dark profile card emphasizing link status and evidence capture",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "sar_profile_card",
+      "category": "profile_cards",
+      "concept": "dark profile card emphasizing search zones and hotspot visibility",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "recreational_profile_card",
+      "category": "profile_cards",
+      "concept": "dark profile card emphasizing simpler comfort-oriented operation",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "signal_quality",
+      "category": "thermal_support",
+      "concept": "signal strength bars for sensor quality",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "palette_white_hot",
+      "category": "thermal_support",
+      "concept": "white-hot thermal palette swatch icon",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "palette_black_hot",
+      "category": "thermal_support",
+      "concept": "black-hot thermal palette swatch icon",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "thermal_blend",
+      "category": "thermal_support",
+      "concept": "blended thermal overlay percentage icon",
+      "families": [
+        "glyph",
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "alert_link_lost",
+      "category": "alert_cards",
+      "concept": "alert card for lost compute link",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "alert_low_battery",
+      "category": "alert_cards",
+      "concept": "alert card for low battery condition",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "alert_recording",
+      "category": "alert_cards",
+      "concept": "alert card for recording active state",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "alert_sensor_fault",
+      "category": "alert_cards",
+      "concept": "alert card for sensor fault status",
+      "families": [
+        "tile"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "low_light_panel_shell",
+      "category": "panel_shells",
+      "concept": "rounded dark panel shell for low-light controls",
+      "families": [
+        "panel"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "thermal_panel_shell",
+      "category": "panel_shells",
+      "concept": "rounded dark panel shell for thermal controls",
+      "families": [
+        "panel"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "detection_panel_shell",
+      "category": "panel_shells",
+      "concept": "rounded dark panel shell for detection controls",
+      "families": [
+        "panel"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "quick_controls_panel_shell",
+      "category": "panel_shells",
+      "concept": "rounded dark panel shell for quick controls",
+      "families": [
+        "panel"
+      ],
+      "generate_now": []
+    },
+    {
+      "name": "device_status_panel_shell",
+      "category": "panel_shells",
+      "concept": "rounded dark panel shell for device status",
+      "families": [
+        "panel"
+      ],
+      "generate_now": []
+    }
+  ]
+}

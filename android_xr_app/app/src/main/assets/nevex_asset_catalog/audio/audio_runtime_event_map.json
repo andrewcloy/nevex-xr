@@ -1,0 +1,781 @@
+{
+  "pack_name": "NEVEX_XR_AudioPack",
+  "version": 1,
+  "intent": "Runtime event mapping for Android XR integration. Trigger event IDs, not raw filenames.",
+  "default_buses": {
+    "master": {"description": "final output bus"},
+    "critical_alerts": {"description": "highest priority critical fault bus"},
+    "alerts": {"description": "urgent warning bus"},
+    "detections": {"description": "high-value detection bus"},
+    "navigation": {"description": "navigation and route cue bus"},
+    "capture_system": {"description": "capture, system, and readiness confirms"},
+    "ui": {"description": "lowest-priority interaction bus"},
+    "playback": {"description": "review and playback interaction bus"}
+  },
+  "cooldown_groups": {
+    "ui_focus": {"default_ms": 90},
+    "ui_confirm": {"default_ms": 120},
+    "readiness_state": {"default_ms": 1500},
+    "system_link": {"default_ms": 2000},
+    "detection_general": {"default_ms": 2200},
+    "detection_track": {"default_ms": 1800},
+    "detection_prey": {"default_ms": 2400},
+    "navigation_general": {"default_ms": 1800},
+    "navigation_heading": {"default_ms": 900},
+    "capture_events": {"default_ms": 100},
+    "playback_ui": {"default_ms": 100},
+    "warning_general": {"default_ms": 5000},
+    "critical_faults": {"default_ms": 7000}
+  },
+  "signature_modes": {
+    "normal": {
+      "description": "default audio behavior"
+    },
+    "low_signature": {
+      "description": "reduced nonessential audio, especially for live-use confirms and detections"
+    },
+    "silent": {
+      "description": "suppresses most lower-priority cues, preserves critical safety behavior"
+    }
+  },
+  "events": [
+    {
+      "event_id": "ui.click_soft",
+      "asset_filename": "ui_click_soft.wav",
+      "category": "ui",
+      "priority": 5,
+      "bus": "ui",
+      "cooldown_group": "ui_confirm",
+      "cooldown_ms": 80,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "suppress_if_busy",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "ui.back",
+      "asset_filename": "ui_back.wav",
+      "category": "ui",
+      "priority": 5,
+      "bus": "ui",
+      "cooldown_group": "ui_confirm",
+      "cooldown_ms": 90,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "ui.focus_shift",
+      "asset_filename": "ui_focus_shift.wav",
+      "category": "ui",
+      "priority": 5,
+      "bus": "ui",
+      "cooldown_group": "ui_focus",
+      "cooldown_ms": 90,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "suppress",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "ui.toggle_on",
+      "asset_filename": "ui_toggle_on.wav",
+      "category": "ui",
+      "priority": 5,
+      "bus": "ui",
+      "cooldown_group": "ui_confirm",
+      "cooldown_ms": 100,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "ui.toggle_off",
+      "asset_filename": "ui_toggle_off.wav",
+      "category": "ui",
+      "priority": 5,
+      "bus": "ui",
+      "cooldown_group": "ui_confirm",
+      "cooldown_ms": 100,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "ui.confirm",
+      "asset_filename": "ui_confirm.wav",
+      "category": "ui",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "ui_confirm",
+      "cooldown_ms": 120,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "ui.dismiss",
+      "asset_filename": "ui_dismiss.wav",
+      "category": "ui",
+      "priority": 5,
+      "bus": "ui",
+      "cooldown_group": "ui_confirm",
+      "cooldown_ms": 100,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "mode.readiness_ready",
+      "asset_filename": "readiness_ready.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 1500,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow_quieter",
+      "visual_dependency": "low",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "mode.readiness_limited",
+      "asset_filename": "readiness_limited.wav",
+      "category": "mode_state",
+      "priority": 2,
+      "bus": "detections",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 2000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow_quieter",
+      "visual_dependency": "low",
+      "interrupt_policy": "duck_priority_5"
+    },
+    {
+      "event_id": "mode.readiness_fault",
+      "asset_filename": "readiness_fault.wav",
+      "category": "mode_state",
+      "priority": 1,
+      "bus": "alerts",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 3000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_lower_than_2"
+    },
+    {
+      "event_id": "system.boot_complete",
+      "asset_filename": "boot_chime.wav",
+      "category": "system",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 2500,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow_quieter",
+      "visual_dependency": "low",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "system.nightvision_activate",
+      "asset_filename": "nightvision_activate.wav",
+      "category": "system",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 2500,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow_quieter",
+      "visual_dependency": "low",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "system.shutdown",
+      "asset_filename": "shutdown_chime.wav",
+      "category": "system",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 2500,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow_quieter",
+      "visual_dependency": "low",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "system.link_reconnect",
+      "asset_filename": "reconnect.wav",
+      "category": "system",
+      "priority": 3,
+      "bus": "navigation",
+      "cooldown_group": "system_link",
+      "cooldown_ms": 2500,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "system.link_disconnect",
+      "asset_filename": "disconnect.wav",
+      "category": "system",
+      "priority": 1,
+      "bus": "alerts",
+      "cooldown_group": "system_link",
+      "cooldown_ms": 5000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_lower_than_2"
+    },
+    {
+      "event_id": "system.calibration_complete",
+      "asset_filename": "calibration_complete.wav",
+      "category": "system",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 1500,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "system.calibration_fail",
+      "asset_filename": "calibration_fail.wav",
+      "category": "system",
+      "priority": 1,
+      "bus": "alerts",
+      "cooldown_group": "warning_general",
+      "cooldown_ms": 4000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_lower_than_2"
+    },
+    {
+      "event_id": "detection.new_target",
+      "asset_filename": "detection_ping.wav",
+      "category": "detection",
+      "priority": 2,
+      "bus": "detections",
+      "cooldown_group": "detection_general",
+      "cooldown_ms": 2200,
+      "mode_behavior": {
+        "military_threat": "enabled",
+        "hunting_game": "enabled",
+        "inspection_search": "enabled",
+        "navigation_patrol": "suppress_by_default",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "high_confidence_only",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "detection.high_confidence",
+      "asset_filename": "detection_confidence_high.wav",
+      "category": "detection",
+      "priority": 2,
+      "bus": "detections",
+      "cooldown_group": "detection_general",
+      "cooldown_ms": 2500,
+      "mode_behavior": {
+        "military_threat": "enabled",
+        "hunting_game": "enabled",
+        "inspection_search": "optional",
+        "navigation_patrol": "suppress_by_default",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_high_confidence",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "detection.target_lock",
+      "asset_filename": "target_lock.wav",
+      "category": "detection",
+      "priority": 2,
+      "bus": "detections",
+      "cooldown_group": "detection_track",
+      "cooldown_ms": 1800,
+      "mode_behavior": {
+        "military_threat": "enabled",
+        "hunting_game": "enabled",
+        "inspection_search": "optional",
+        "navigation_patrol": "suppress",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_high_confidence",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "detection.target_lost",
+      "asset_filename": "target_lost.wav",
+      "category": "detection",
+      "priority": 3,
+      "bus": "detections",
+      "cooldown_group": "detection_track",
+      "cooldown_ms": 2000,
+      "mode_behavior": {
+        "military_threat": "enabled",
+        "hunting_game": "enabled",
+        "inspection_search": "optional",
+        "navigation_patrol": "suppress",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "suppress",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "detection.prey_detected",
+      "asset_filename": "prey_detected.wav",
+      "category": "detection",
+      "priority": 2,
+      "bus": "detections",
+      "cooldown_group": "detection_prey",
+      "cooldown_ms": 2400,
+      "mode_behavior": {
+        "military_threat": "suppress",
+        "hunting_game": "enabled",
+        "inspection_search": "suppress",
+        "navigation_patrol": "suppress",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "user_setting_dependent",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "detection.prey_reacquire",
+      "asset_filename": "prey_reacquire.wav",
+      "category": "detection",
+      "priority": 2,
+      "bus": "detections",
+      "cooldown_group": "detection_prey",
+      "cooldown_ms": 2600,
+      "mode_behavior": {
+        "military_threat": "suppress",
+        "hunting_game": "enabled",
+        "inspection_search": "suppress",
+        "navigation_patrol": "suppress",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "user_setting_dependent",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "detection.anomaly_mark",
+      "asset_filename": "anomaly_mark.wav",
+      "category": "detection",
+      "priority": 3,
+      "bus": "capture_system",
+      "cooldown_group": "capture_events",
+      "cooldown_ms": 250,
+      "mode_behavior": {
+        "military_threat": "optional",
+        "hunting_game": "suppress",
+        "inspection_search": "enabled",
+        "navigation_patrol": "optional",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "medium",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "nav.waypoint_set",
+      "asset_filename": "waypoint_set.wav",
+      "category": "navigation",
+      "priority": 3,
+      "bus": "navigation",
+      "cooldown_group": "navigation_general",
+      "cooldown_ms": 1800,
+      "mode_behavior": {
+        "military_threat": "enabled",
+        "hunting_game": "enabled",
+        "inspection_search": "enabled",
+        "navigation_patrol": "enabled",
+        "review_playback": "optional"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_initiated",
+      "visual_dependency": "medium",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "nav.waypoint_arrival",
+      "asset_filename": "waypoint_arrival.wav",
+      "category": "navigation",
+      "priority": 3,
+      "bus": "navigation",
+      "cooldown_group": "navigation_general",
+      "cooldown_ms": 2200,
+      "mode_behavior": {
+        "military_threat": "optional",
+        "hunting_game": "enabled",
+        "inspection_search": "enabled",
+        "navigation_patrol": "enabled",
+        "review_playback": "optional"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_important",
+      "visual_dependency": "medium",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "nav.route_deviation",
+      "asset_filename": "route_deviation.wav",
+      "category": "navigation",
+      "priority": 1,
+      "bus": "alerts",
+      "cooldown_group": "warning_general",
+      "cooldown_ms": 5000,
+      "mode_behavior": {
+        "military_threat": "enabled_if_navigation_assist_active",
+        "hunting_game": "optional",
+        "inspection_search": "optional",
+        "navigation_patrol": "enabled",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "allow_if_safety_relevant",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_lower_than_2"
+    },
+    {
+      "event_id": "nav.return_path",
+      "asset_filename": "return_path.wav",
+      "category": "navigation",
+      "priority": 3,
+      "bus": "navigation",
+      "cooldown_group": "navigation_general",
+      "cooldown_ms": 2000,
+      "mode_behavior": {
+        "military_threat": "enabled",
+        "hunting_game": "enabled",
+        "inspection_search": "enabled",
+        "navigation_patrol": "enabled",
+        "review_playback": "optional"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_requested",
+      "visual_dependency": "medium",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "nav.heading_adjust",
+      "asset_filename": "heading_adjust.wav",
+      "category": "navigation",
+      "priority": 3,
+      "bus": "navigation",
+      "cooldown_group": "navigation_heading",
+      "cooldown_ms": 900,
+      "mode_behavior": {
+        "military_threat": "enabled_if_navigation_assist_active",
+        "hunting_game": "optional",
+        "inspection_search": "optional",
+        "navigation_patrol": "enabled",
+        "review_playback": "suppress"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "suppress_or_reduce",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "capture.photo",
+      "asset_filename": "capture_photo.wav",
+      "category": "capture",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "capture_events",
+      "cooldown_ms": 80,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_initiated",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "capture.record_start",
+      "asset_filename": "record_start.wav",
+      "category": "capture",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "capture_events",
+      "cooldown_ms": 120,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_initiated",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "capture.record_stop",
+      "asset_filename": "record_stop.wav",
+      "category": "capture",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "capture_events",
+      "cooldown_ms": 120,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_initiated",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "playback.open",
+      "asset_filename": "playback_open.wav",
+      "category": "playback",
+      "priority": 4,
+      "bus": "playback",
+      "cooldown_group": "playback_ui",
+      "cooldown_ms": 200,
+      "mode_behavior": {
+        "global": "enabled",
+        "review_playback": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "playback.select",
+      "asset_filename": "playback_select.wav",
+      "category": "playback",
+      "priority": 5,
+      "bus": "playback",
+      "cooldown_group": "playback_ui",
+      "cooldown_ms": 90,
+      "mode_behavior": {
+        "global": "enabled",
+        "review_playback": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_not_busy",
+      "visual_dependency": "high",
+      "interrupt_policy": "never_interrupt_higher"
+    },
+    {
+      "event_id": "alert.warning",
+      "asset_filename": "warning_alert.wav",
+      "category": "warnings",
+      "priority": 1,
+      "bus": "alerts",
+      "cooldown_group": "warning_general",
+      "cooldown_ms": 5000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow_selected",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_lower_than_2"
+    },
+    {
+      "event_id": "alert.critical_fault",
+      "asset_filename": "critical_fault.wav",
+      "category": "warnings",
+      "priority": 0,
+      "bus": "critical_alerts",
+      "cooldown_group": "critical_faults",
+      "cooldown_ms": 7000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_everything_lower"
+    },
+    {
+      "event_id": "alert.low_battery",
+      "asset_filename": "low_battery.wav",
+      "category": "warnings",
+      "priority": 1,
+      "bus": "alerts",
+      "cooldown_group": "warning_general",
+      "cooldown_ms": 8000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow_selected",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_lower_than_2"
+    },
+    {
+      "event_id": "alert.storage_near_full",
+      "asset_filename": "storage_near_full.wav",
+      "category": "warnings",
+      "priority": 1,
+      "bus": "alerts",
+      "cooldown_group": "warning_general",
+      "cooldown_ms": 12000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow_selected",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_lower_than_2"
+    },
+    {
+      "event_id": "alert.sensor_error",
+      "asset_filename": "sensor_error.wav",
+      "category": "warnings",
+      "priority": 0,
+      "bus": "critical_alerts",
+      "cooldown_group": "critical_faults",
+      "cooldown_ms": 7000,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "allow",
+      "low_signature_behavior": "allow",
+      "visual_dependency": "low",
+      "interrupt_policy": "interrupt_everything_lower"
+    },
+    {
+      "event_id": "mode.standby_enter",
+      "asset_filename": "standby_enter.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 800,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_initiated",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "mode.standby_exit",
+      "asset_filename": "standby_exit.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 800,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_initiated",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "mode.blackout_enter",
+      "asset_filename": "blackout_enter.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 800,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_initiated",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    },
+    {
+      "event_id": "mode.blackout_exit",
+      "asset_filename": "blackout_exit.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "bus": "capture_system",
+      "cooldown_group": "readiness_state",
+      "cooldown_ms": 800,
+      "mode_behavior": {
+        "global": "enabled"
+      },
+      "silent_mode_behavior": "suppress",
+      "low_signature_behavior": "allow_if_user_initiated",
+      "visual_dependency": "medium",
+      "interrupt_policy": "duck_ui_only"
+    }
+  ]
+}

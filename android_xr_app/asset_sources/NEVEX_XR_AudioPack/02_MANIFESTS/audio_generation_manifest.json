@@ -1,0 +1,930 @@
+{
+  "pack_name": "NEVEX_XR_AudioPack",
+  "generator": "procedural_python",
+  "defaults": {
+    "sample_rate_hz": 48000,
+    "bit_depth": 16,
+    "channels": 2,
+    "peak_normalization_dbfs": -3.0,
+    "loudness_guidance": {
+      "headset_target_short_ui_lufs": -24,
+      "headset_target_alert_lufs": -20,
+      "notes": "Use conservative loudness for headset comfort. Critical alerts may sit above confirms but should avoid sharp harshness."
+    },
+    "rendering_rules": {
+      "max_reverb_ms": 45,
+      "default_reverb_ms": 0,
+      "default_fade_in_ms": 4,
+      "default_fade_out_ms": 22,
+      "highpass_for_alerts_hz": 110,
+      "avoid_harsh_highs_above_hz": 6500
+    }
+  },
+  "rerun_support": {
+    "skip_existing_by_default": true,
+    "supports_only_failed": true,
+    "supports_match_filter": true,
+    "supports_force_overwrite": true
+  },
+  "priority_behavior": {
+    "0": "fault_critical",
+    "1": "safety_urgent",
+    "2": "high_value_detection",
+    "3": "navigation",
+    "4": "capture_system_confirm",
+    "5": "low_level_ui"
+  },
+  "cooldown_guidance": {
+    "detection_default_ms": 2200,
+    "navigation_default_ms": 1800,
+    "warning_repeat_min_ms": 5000
+  },
+  "assets": [
+    {
+      "filename": "ui_click_soft.wav",
+      "category": "ui",
+      "priority": 5,
+      "trigger": "soft generic UI press or selection",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 85,
+      "character": "short soft mid-high synthetic tap with rounded transient",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "interaction",
+      "ducking": "none",
+      "interrupts": [],
+      "style": "soft_click",
+      "folder": "03_ASSETS/audio/ui",
+      "path": "03_ASSETS/audio/ui/ui_click_soft.wav"
+    },
+    {
+      "filename": "ui_back.wav",
+      "category": "ui",
+      "priority": 5,
+      "trigger": "back navigation action",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 95,
+      "character": "short downward confirm with gentle release",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "navigation",
+      "ducking": "none",
+      "interrupts": [],
+      "style": "back",
+      "folder": "03_ASSETS/audio/ui",
+      "path": "03_ASSETS/audio/ui/ui_back.wav"
+    },
+    {
+      "filename": "ui_focus_shift.wav",
+      "category": "ui",
+      "priority": 5,
+      "trigger": "focus moves between menu rows or tiles",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 75,
+      "character": "tiny glide cue, restrained and airy",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "focus",
+      "ducking": "none",
+      "interrupts": [],
+      "style": "focus",
+      "folder": "03_ASSETS/audio/ui",
+      "path": "03_ASSETS/audio/ui/ui_focus_shift.wav"
+    },
+    {
+      "filename": "ui_toggle_on.wav",
+      "category": "ui",
+      "priority": 5,
+      "trigger": "toggle enabled",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 105,
+      "character": "clean upward dual-tone enable cue",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "toggle",
+      "ducking": "none",
+      "interrupts": [],
+      "style": "toggle_on",
+      "folder": "03_ASSETS/audio/ui",
+      "path": "03_ASSETS/audio/ui/ui_toggle_on.wav"
+    },
+    {
+      "filename": "ui_toggle_off.wav",
+      "category": "ui",
+      "priority": 5,
+      "trigger": "toggle disabled",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 105,
+      "character": "clean downward dual-tone disable cue",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "toggle",
+      "ducking": "none",
+      "interrupts": [],
+      "style": "toggle_off",
+      "folder": "03_ASSETS/audio/ui",
+      "path": "03_ASSETS/audio/ui/ui_toggle_off.wav"
+    },
+    {
+      "filename": "ui_confirm.wav",
+      "category": "ui",
+      "priority": 4,
+      "trigger": "primary action confirmed",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 130,
+      "character": "compact reassuring two-note rise",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "confirm",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "confirm",
+      "folder": "03_ASSETS/audio/ui",
+      "path": "03_ASSETS/audio/ui/ui_confirm.wav"
+    },
+    {
+      "filename": "ui_dismiss.wav",
+      "category": "ui",
+      "priority": 5,
+      "trigger": "dismiss close or cancel panel",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 90,
+      "character": "short neutral downward cue",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "dismiss",
+      "ducking": "none",
+      "interrupts": [],
+      "style": "dismiss",
+      "folder": "03_ASSETS/audio/ui",
+      "path": "03_ASSETS/audio/ui/ui_dismiss.wav"
+    },
+    {
+      "filename": "readiness_ready.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "trigger": "system ready for operation",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 520,
+      "character": "premium restrained readiness phrase, trustworthy and calm",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "readiness",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "ready",
+      "folder": "03_ASSETS/audio/mode_state",
+      "path": "03_ASSETS/audio/mode_state/readiness_ready.wav"
+    },
+    {
+      "filename": "readiness_limited.wav",
+      "category": "mode_state",
+      "priority": 2,
+      "trigger": "system enters limited readiness state",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 520,
+      "character": "cautious restrained phrase with mild tension",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "readiness",
+      "ducking": "duck_priority_4_5",
+      "interrupts": [
+        5
+      ],
+      "style": "ready_limited",
+      "folder": "03_ASSETS/audio/mode_state",
+      "path": "03_ASSETS/audio/mode_state/readiness_limited.wav"
+    },
+    {
+      "filename": "readiness_fault.wav",
+      "category": "mode_state",
+      "priority": 1,
+      "trigger": "system enters non-ready fault state",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 620,
+      "character": "unmistakable fault phrase without melodrama",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "readiness",
+      "ducking": "duck_priority_3_4_5",
+      "interrupts": [
+        3,
+        4,
+        5
+      ],
+      "style": "ready_fault",
+      "folder": "03_ASSETS/audio/mode_state",
+      "path": "03_ASSETS/audio/mode_state/readiness_fault.wav"
+    },
+    {
+      "filename": "boot_chime.wav",
+      "category": "system",
+      "priority": 4,
+      "trigger": "system boot complete",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 760,
+      "character": "short premium avionics startup signature",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "boot",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "boot",
+      "folder": "03_ASSETS/audio/system",
+      "path": "03_ASSETS/audio/system/boot_chime.wav"
+    },
+    {
+      "filename": "nightvision_activate.wav",
+      "category": "system",
+      "priority": 4,
+      "trigger": "night vision imaging channel activates during boot screen",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 520,
+      "character": "classic night-vision style activation rise with restrained synthetic power-up whine",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "boot",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "nightvision_activate",
+      "folder": "03_ASSETS/audio/system",
+      "path": "03_ASSETS/audio/system/nightvision_activate.wav"
+    },
+    {
+      "filename": "shutdown_chime.wav",
+      "category": "system",
+      "priority": 4,
+      "trigger": "system shutdown",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 700,
+      "character": "calm descending shutdown phrase",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "shutdown",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "shutdown",
+      "folder": "03_ASSETS/audio/system",
+      "path": "03_ASSETS/audio/system/shutdown_chime.wav"
+    },
+    {
+      "filename": "reconnect.wav",
+      "category": "system",
+      "priority": 3,
+      "trigger": "critical link restored",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 220,
+      "character": "clean reconnect confirmation with subtle rise",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "link",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "reconnect",
+      "folder": "03_ASSETS/audio/system",
+      "path": "03_ASSETS/audio/system/reconnect.wav"
+    },
+    {
+      "filename": "disconnect.wav",
+      "category": "system",
+      "priority": 1,
+      "trigger": "critical compute or sensor link lost",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 320,
+      "character": "clear service-loss phrase with restrained urgency",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "link",
+      "ducking": "duck_priority_3_4_5",
+      "interrupts": [
+        3,
+        4,
+        5
+      ],
+      "style": "disconnect",
+      "folder": "03_ASSETS/audio/system",
+      "path": "03_ASSETS/audio/system/disconnect.wav"
+    },
+    {
+      "filename": "detection_ping.wav",
+      "category": "detection",
+      "priority": 2,
+      "trigger": "new relevant detection appears",
+      "modes": [
+        "military_threat",
+        "hunting_game",
+        "inspection_search"
+      ],
+      "duration_ms": 140,
+      "character": "focused detection ping, brighter than UI but not shrill",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "detection",
+      "ducking": "duck_priority_5",
+      "interrupts": [
+        5
+      ],
+      "style": "detect_ping",
+      "folder": "03_ASSETS/audio/detection",
+      "path": "03_ASSETS/audio/detection/detection_ping.wav"
+    },
+    {
+      "filename": "detection_confidence_high.wav",
+      "category": "detection",
+      "priority": 2,
+      "trigger": "high-confidence detection enters trackable state",
+      "modes": [
+        "military_threat",
+        "hunting_game"
+      ],
+      "duration_ms": 190,
+      "character": "brighter dual-tone confidence cue",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "detection",
+      "ducking": "duck_priority_5",
+      "interrupts": [
+        5
+      ],
+      "style": "detect_high",
+      "folder": "03_ASSETS/audio/detection",
+      "path": "03_ASSETS/audio/detection/detection_confidence_high.wav"
+    },
+    {
+      "filename": "target_lock.wav",
+      "category": "detection",
+      "priority": 2,
+      "trigger": "target enters stable lock or track state",
+      "modes": [
+        "military_threat",
+        "hunting_game"
+      ],
+      "duration_ms": 230,
+      "character": "focused two-pulse lock confirmation",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "tracking",
+      "ducking": "duck_priority_5",
+      "interrupts": [
+        5
+      ],
+      "style": "lock",
+      "folder": "03_ASSETS/audio/detection",
+      "path": "03_ASSETS/audio/detection/target_lock.wav"
+    },
+    {
+      "filename": "target_lost.wav",
+      "category": "detection",
+      "priority": 3,
+      "trigger": "tracked target is lost",
+      "modes": [
+        "military_threat",
+        "hunting_game"
+      ],
+      "duration_ms": 180,
+      "character": "descending loss cue with minimal annoyance",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "tracking",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "lost",
+      "folder": "03_ASSETS/audio/detection",
+      "path": "03_ASSETS/audio/detection/target_lost.wav"
+    },
+    {
+      "filename": "prey_detected.wav",
+      "category": "detection",
+      "priority": 2,
+      "trigger": "animal or prey detected in hunting mode",
+      "modes": [
+        "hunting_game"
+      ],
+      "duration_ms": 170,
+      "character": "clean outdoor-friendly prey cue, slightly softer than threat alert",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "prey",
+      "ducking": "duck_priority_5",
+      "interrupts": [
+        5
+      ],
+      "style": "prey_detect",
+      "folder": "03_ASSETS/audio/detection",
+      "path": "03_ASSETS/audio/detection/prey_detected.wav"
+    },
+    {
+      "filename": "prey_reacquire.wav",
+      "category": "detection",
+      "priority": 2,
+      "trigger": "prey target reacquired after temporary loss",
+      "modes": [
+        "hunting_game"
+      ],
+      "duration_ms": 185,
+      "character": "short reacquire cue with slight confidence lift",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "prey",
+      "ducking": "duck_priority_5",
+      "interrupts": [
+        5
+      ],
+      "style": "prey_reacquire",
+      "folder": "03_ASSETS/audio/detection",
+      "path": "03_ASSETS/audio/detection/prey_reacquire.wav"
+    },
+    {
+      "filename": "anomaly_mark.wav",
+      "category": "detection",
+      "priority": 3,
+      "trigger": "user marks anomaly or search finding",
+      "modes": [
+        "inspection_search"
+      ],
+      "duration_ms": 160,
+      "character": "measured mark cue suited for documentation work",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "annotation",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "anomaly_mark",
+      "folder": "03_ASSETS/audio/detection",
+      "path": "03_ASSETS/audio/detection/anomaly_mark.wav"
+    },
+    {
+      "filename": "waypoint_set.wav",
+      "category": "navigation",
+      "priority": 3,
+      "trigger": "waypoint created or confirmed",
+      "modes": [
+        "military_threat",
+        "hunting_game",
+        "inspection_search",
+        "navigation_patrol"
+      ],
+      "duration_ms": 180,
+      "character": "clear waypoint commit cue with slight spatial hint",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "waypoint",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "waypoint_set",
+      "folder": "03_ASSETS/audio/navigation",
+      "path": "03_ASSETS/audio/navigation/waypoint_set.wav"
+    },
+    {
+      "filename": "waypoint_arrival.wav",
+      "category": "navigation",
+      "priority": 3,
+      "trigger": "arrival at waypoint or destination threshold",
+      "modes": [
+        "hunting_game",
+        "navigation_patrol",
+        "inspection_search"
+      ],
+      "duration_ms": 240,
+      "character": "gentle arrival phrase, clearly distinct from warnings",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "waypoint",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "arrival",
+      "folder": "03_ASSETS/audio/navigation",
+      "path": "03_ASSETS/audio/navigation/waypoint_arrival.wav"
+    },
+    {
+      "filename": "route_deviation.wav",
+      "category": "navigation",
+      "priority": 1,
+      "trigger": "route or patrol deviation crosses threshold",
+      "modes": [
+        "navigation_patrol",
+        "military_threat"
+      ],
+      "duration_ms": 280,
+      "character": "firm route deviation pulse, urgent but not panicked",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "route",
+      "ducking": "duck_priority_3_4_5",
+      "interrupts": [
+        3,
+        4,
+        5
+      ],
+      "style": "route_deviation",
+      "folder": "03_ASSETS/audio/navigation",
+      "path": "03_ASSETS/audio/navigation/route_deviation.wav"
+    },
+    {
+      "filename": "return_path.wav",
+      "category": "navigation",
+      "priority": 3,
+      "trigger": "return path guidance toggled or emphasized",
+      "modes": [
+        "military_threat",
+        "hunting_game",
+        "inspection_search",
+        "navigation_patrol"
+      ],
+      "duration_ms": 210,
+      "character": "calm directional phrase implying guided return",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "route",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "return_path",
+      "folder": "03_ASSETS/audio/navigation",
+      "path": "03_ASSETS/audio/navigation/return_path.wav"
+    },
+    {
+      "filename": "heading_adjust.wav",
+      "category": "navigation",
+      "priority": 3,
+      "trigger": "heading correction cue during navigation-heavy modes",
+      "modes": [
+        "navigation_patrol",
+        "military_threat"
+      ],
+      "duration_ms": 140,
+      "character": "direction-capable soft tick with mild stereo bias",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "heading",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "heading_adjust",
+      "folder": "03_ASSETS/audio/navigation",
+      "path": "03_ASSETS/audio/navigation/heading_adjust.wav"
+    },
+    {
+      "filename": "capture_photo.wav",
+      "category": "capture",
+      "priority": 4,
+      "trigger": "photo captured",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 130,
+      "character": "clean shutter-like synthetic capture tick, not camera-like novelty",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "photo",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "photo",
+      "folder": "03_ASSETS/audio/capture",
+      "path": "03_ASSETS/audio/capture/capture_photo.wav"
+    },
+    {
+      "filename": "record_start.wav",
+      "category": "capture",
+      "priority": 4,
+      "trigger": "recording starts",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 190,
+      "character": "clear start capture cue with restrained authority",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "record",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "record_start",
+      "folder": "03_ASSETS/audio/capture",
+      "path": "03_ASSETS/audio/capture/record_start.wav"
+    },
+    {
+      "filename": "record_stop.wav",
+      "category": "capture",
+      "priority": 4,
+      "trigger": "recording stops",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 180,
+      "character": "clear stop capture cue, matched to record start family",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "record",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "record_stop",
+      "folder": "03_ASSETS/audio/capture",
+      "path": "03_ASSETS/audio/capture/record_stop.wav"
+    },
+    {
+      "filename": "playback_open.wav",
+      "category": "playback",
+      "priority": 4,
+      "trigger": "enter playback or review mode",
+      "modes": [
+        "review_playback",
+        "global"
+      ],
+      "duration_ms": 180,
+      "character": "calm review entry cue with neutral confidence",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "playback",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "playback_open",
+      "folder": "03_ASSETS/audio/playback",
+      "path": "03_ASSETS/audio/playback/playback_open.wav"
+    },
+    {
+      "filename": "playback_select.wav",
+      "category": "playback",
+      "priority": 5,
+      "trigger": "select media item during playback review",
+      "modes": [
+        "review_playback",
+        "global"
+      ],
+      "duration_ms": 95,
+      "character": "small review-list select cue",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "playback",
+      "ducking": "none",
+      "interrupts": [],
+      "style": "playback_select",
+      "folder": "03_ASSETS/audio/playback",
+      "path": "03_ASSETS/audio/playback/playback_select.wav"
+    },
+    {
+      "filename": "warning_alert.wav",
+      "category": "warnings",
+      "priority": 1,
+      "trigger": "non-critical but urgent warning requiring awareness",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 380,
+      "character": "controlled warning pulse, distinct from critical fault",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "warning",
+      "ducking": "duck_priority_2_3_4_5",
+      "interrupts": [
+        3,
+        4,
+        5
+      ],
+      "style": "warning",
+      "folder": "03_ASSETS/audio/warnings",
+      "path": "03_ASSETS/audio/warnings/warning_alert.wav"
+    },
+    {
+      "filename": "critical_fault.wav",
+      "category": "warnings",
+      "priority": 0,
+      "trigger": "critical fault requiring immediate awareness",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 620,
+      "character": "unmistakable critical multi-pulse with low-mid authority and bright edge",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "critical",
+      "ducking": "duck_all_lower_priorities",
+      "interrupts": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "style": "critical",
+      "folder": "03_ASSETS/audio/warnings",
+      "path": "03_ASSETS/audio/warnings/critical_fault.wav"
+    },
+    {
+      "filename": "low_battery.wav",
+      "category": "warnings",
+      "priority": 1,
+      "trigger": "battery crosses low threshold",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 360,
+      "character": "measured low-power warning phrase",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "power",
+      "ducking": "duck_priority_3_4_5",
+      "interrupts": [
+        3,
+        4,
+        5
+      ],
+      "style": "low_battery",
+      "folder": "03_ASSETS/audio/warnings",
+      "path": "03_ASSETS/audio/warnings/low_battery.wav"
+    },
+    {
+      "filename": "storage_near_full.wav",
+      "category": "warnings",
+      "priority": 1,
+      "trigger": "storage approaches full threshold",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 330,
+      "character": "storage pressure alert, calmer than critical fault",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "storage",
+      "ducking": "duck_priority_3_4_5",
+      "interrupts": [
+        3,
+        4,
+        5
+      ],
+      "style": "storage_near_full",
+      "folder": "03_ASSETS/audio/warnings",
+      "path": "03_ASSETS/audio/warnings/storage_near_full.wav"
+    },
+    {
+      "filename": "sensor_error.wav",
+      "category": "warnings",
+      "priority": 0,
+      "trigger": "major sensor failure or unavailable sensor state",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 500,
+      "character": "firm sensor fault phrase, immediate and distinct",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "sensor",
+      "ducking": "duck_all_lower_priorities",
+      "interrupts": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "style": "sensor_error",
+      "folder": "03_ASSETS/audio/warnings",
+      "path": "03_ASSETS/audio/warnings/sensor_error.wav"
+    },
+    {
+      "filename": "calibration_complete.wav",
+      "category": "system",
+      "priority": 4,
+      "trigger": "calibration completes successfully",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 260,
+      "character": "reassuring completion phrase, precise and clean",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "calibration",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "cal_complete",
+      "folder": "03_ASSETS/audio/system",
+      "path": "03_ASSETS/audio/system/calibration_complete.wav"
+    },
+    {
+      "filename": "calibration_fail.wav",
+      "category": "system",
+      "priority": 1,
+      "trigger": "calibration fails or exits invalid",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 360,
+      "character": "clear failure phrase with no melodrama",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "calibration",
+      "ducking": "duck_priority_3_4_5",
+      "interrupts": [
+        3,
+        4,
+        5
+      ],
+      "style": "cal_fail",
+      "folder": "03_ASSETS/audio/system",
+      "path": "03_ASSETS/audio/system/calibration_fail.wav"
+    },
+    {
+      "filename": "standby_enter.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "trigger": "enter standby mode",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 220,
+      "character": "controlled low-energy entry cue",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "standby",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "standby_enter",
+      "folder": "03_ASSETS/audio/mode_state",
+      "path": "03_ASSETS/audio/mode_state/standby_enter.wav"
+    },
+    {
+      "filename": "standby_exit.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "trigger": "exit standby mode",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 220,
+      "character": "calm wake cue with modest rise",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "standby",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "standby_exit",
+      "folder": "03_ASSETS/audio/mode_state",
+      "path": "03_ASSETS/audio/mode_state/standby_exit.wav"
+    },
+    {
+      "filename": "blackout_enter.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "trigger": "enter blackout or low-signature display-off mode",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 180,
+      "character": "minimal low-signature blackout entry cue",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "blackout",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "blackout_enter",
+      "folder": "03_ASSETS/audio/mode_state",
+      "path": "03_ASSETS/audio/mode_state/blackout_enter.wav"
+    },
+    {
+      "filename": "blackout_exit.wav",
+      "category": "mode_state",
+      "priority": 4,
+      "trigger": "exit blackout mode",
+      "modes": [
+        "global"
+      ],
+      "duration_ms": 190,
+      "character": "minimal blackout exit cue, slightly clearer than enter",
+      "type": "one_shot",
+      "procedural": true,
+      "subcategory": "blackout",
+      "ducking": "duck_priority_5",
+      "interrupts": [],
+      "style": "blackout_exit",
+      "folder": "03_ASSETS/audio/mode_state",
+      "path": "03_ASSETS/audio/mode_state/blackout_exit.wav"
+    }
+  ]
+}

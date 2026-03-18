@@ -1,0 +1,246 @@
+{
+  "revision_name": "NEVEX XR production menu and operational mode refinement",
+  "intent": "Reduce XR overload risk by tightening hierarchy, labels, asset exposure, and mission-aware behavior.",
+  "stable_backbone": {
+    "ui_layers": [
+      "live_hud",
+      "quick_menu",
+      "main_menu",
+      "advanced_service"
+    ],
+    "top_level_main_menu": [
+      "vision",
+      "thermal",
+      "capture",
+      "playback",
+      "device",
+      "system",
+      "advanced"
+    ]
+  },
+  "boot_readiness": {
+    "main_mode_select": [
+      "military_threat",
+      "hunting_game",
+      "inspection_search",
+      "navigation_patrol",
+      "review_playback",
+      "profiles_presets",
+      "global_settings"
+    ]
+  },
+  "default_quick_menu": [
+    "brightness",
+    "gain_exposure",
+    "zoom",
+    "view_mode",
+    "thermal_blend",
+    "record",
+    "overlay_level",
+    "standby_blackout"
+  ],
+  "operational_modes": {
+    "military_threat": {
+      "primary_categories": ["vision", "thermal", "capture"],
+      "secondary_categories": ["device", "system"],
+      "quick_tools": [
+        "brightness",
+        "gain_exposure",
+        "zoom",
+        "thermal_blend",
+        "threat_sensitivity",
+        "overlay_level",
+        "record",
+        "standby_blackout"
+      ],
+      "default_hud": [
+        "battery",
+        "record",
+        "current_mode",
+        "heading_bearing",
+        "degraded_link_state",
+        "threat_markers_contextual"
+      ],
+      "mode_tools": [
+        "threat_sensitivity",
+        "evidence_tag",
+        "waypoint_mark",
+        "return_to_start"
+      ]
+    },
+    "hunting_game": {
+      "primary_categories": ["vision", "thermal", "capture"],
+      "secondary_categories": ["playback", "system"],
+      "quick_tools": [
+        "brightness",
+        "gain",
+        "zoom",
+        "thermal_toggle_or_blend",
+        "prey_sensitivity",
+        "audible_alert",
+        "overlay_level",
+        "snapshot_record"
+      ],
+      "default_hud": [
+        "battery",
+        "record",
+        "current_mode",
+        "heading",
+        "prey_markers_contextual"
+      ],
+      "mode_tools": [
+        "prey_sensitivity",
+        "waypoint_mark",
+        "trail_back",
+        "camp_vehicle_return"
+      ]
+    },
+    "inspection_search": {
+      "primary_categories": ["vision", "thermal", "capture"],
+      "secondary_categories": ["playback", "device"],
+      "quick_tools": [
+        "brightness",
+        "gain_exposure",
+        "zoom",
+        "edge_enhance",
+        "thermal_blend",
+        "capture",
+        "annotation",
+        "overlay_level"
+      ],
+      "default_hud": [
+        "battery",
+        "current_mode",
+        "zoom",
+        "annotation_state",
+        "breadcrumb_contextual"
+      ],
+      "mode_tools": [
+        "annotation",
+        "anomaly_mark",
+        "breadcrumb_toggle",
+        "return_path_cue"
+      ]
+    },
+    "navigation_patrol": {
+      "primary_categories": ["vision", "capture", "system"],
+      "secondary_categories": ["thermal", "device"],
+      "quick_tools": [
+        "brightness",
+        "zoom",
+        "overlay_density",
+        "compass_toggle",
+        "waypoint_toggle",
+        "route_breadcrumb_toggle",
+        "thermal_toggle",
+        "event_mark_record"
+      ],
+      "default_hud": [
+        "battery",
+        "current_mode",
+        "heading_compass",
+        "waypoint_cue",
+        "route_breadcrumb_cue"
+      ],
+      "mode_tools": [
+        "checkpoint_mark",
+        "waypoint_cycle",
+        "route_toggle",
+        "return_to_origin"
+      ]
+    },
+    "review_playback": {
+      "primary_categories": ["playback", "capture"],
+      "secondary_categories": ["system", "device"],
+      "quick_tools": [
+        "recent",
+        "filter",
+        "scrub",
+        "tag_event_jump",
+        "protect_favorite",
+        "export",
+        "delete",
+        "back_to_live"
+      ],
+      "default_hud": [
+        "current_file_state",
+        "tagged_event_state",
+        "protect_state"
+      ],
+      "mode_tools": [
+        "tagged_event_review",
+        "route_replay",
+        "compare_captures",
+        "export_queue"
+      ]
+    }
+  },
+  "navigation_integration": {
+    "primary_home": "vision",
+    "supporting_homes": ["capture", "playback", "system", "advanced"],
+    "related_assets": ["compass", "waypoint", "nav_safe"]
+  },
+  "merge_recommendations": [
+    {
+      "assets": ["ir_on", "ir_off"],
+      "recommended_control": "ir_toggle",
+      "reason": "State styling is more efficient than separate icons in XR quick controls."
+    },
+    {
+      "assets": ["detection_on", "detection_off"],
+      "recommended_control": "detection_toggle",
+      "reason": "Binary state should not consume two visible control slots."
+    }
+  ],
+  "deprioritize_from_first_order_navigation": [
+    "diagnostics",
+    "fps",
+    "latency",
+    "jetson_link",
+    "reconnecting",
+    "target_box",
+    "target_lock",
+    "person_detect",
+    "animal_detect",
+    "hotspot",
+    "warning",
+    "critical"
+  ],
+  "labels_required_for": [
+    "main_menu_categories",
+    "first_level_submenus",
+    "advanced_tools",
+    "profiles",
+    "destructive_actions",
+    "export_actions",
+    "calibration_utilities",
+    "mode_selection_entries"
+  ],
+  "screen_revision_candidates": [
+    {
+      "current_screen": "live_hud_expanded",
+      "recommended_change": "rename or reinterpret as live_hud_contextual",
+      "reason": "Expanded HUD should be temporary and task-bound, not a denser persistent state."
+    },
+    {
+      "current_screen": "record_playback_panel",
+      "recommended_change": "split into capture_panel and playback_panel",
+      "reason": "Creation and review are different user intents."
+    },
+    {
+      "current_screen": "profile_select_panel",
+      "recommended_change": "place under system",
+      "reason": "Profiles are broad configuration, not quick access."
+    },
+    {
+      "current_screen": "connectivity_panel",
+      "recommended_change": "place under system/connectivity",
+      "reason": "Connectivity should not compete with image controls."
+    },
+    {
+      "current_screen": "quick_controls_strip",
+      "recommended_change": "treat as mode-aware quick menu shell",
+      "reason": "Operational modes should change ordering and emphasis without changing the underlying layer."
+    }
+  ]
+}
