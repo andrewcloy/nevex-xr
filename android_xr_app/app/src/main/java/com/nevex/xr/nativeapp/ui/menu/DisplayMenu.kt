@@ -7,18 +7,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nevex.xr.nativeapp.R
 import com.nevex.xr.nativeapp.ui.components.MenuButton
 import com.nevex.xr.nativeapp.ui.components.ToggleItem
 import com.nevex.xr.nativeapp.ui.overlay.LiveViewOverlayLayer
 import com.nevex.xr.nativeapp.ui.state.MenuSelectionIndex
 import com.nevex.xr.nativeapp.ui.state.NevexMenuUiState
 import com.nevex.xr.nativeapp.ui.state.OverlayUiState
+import com.nevex.xr.nativeapp.ui.state.ThermalOverlayMode
 import com.nevex.xr.nativeapp.ui.theme.NevexBorder
 import com.nevex.xr.nativeapp.ui.theme.NevexPanel
 import com.nevex.xr.nativeapp.ui.theme.NevexTextSecondary
@@ -31,16 +35,31 @@ fun DisplayMenu(
     onReticleToggle: (Boolean) -> Unit,
     onGridToggle: (Boolean) -> Unit,
     onBoundingBoxesToggle: (Boolean) -> Unit,
-    onThermalOverlayToggle: (Boolean) -> Unit,
+    onCycleThermalMode: () -> Unit,
+    onOpenThermalPresentation: () -> Unit,
+    onThermalPreviewModeToggle: (Boolean) -> Unit,
+    onCycleThermalPreviewOpacityPreset: () -> Unit,
+    onOpenThermalAlignment: () -> Unit,
     onReturnSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val thermalMode = menuUiState.displaySettings.thermalMode
+    val thermalPreviewModeEnabled = menuUiState.displaySettings.thermalPreviewModeEnabled
+    val thermalPreviewOpacityPreset = menuUiState.displaySettings.thermalPreviewOpacityPreset
+    val thermalSubtitle = when (thermalMode) {
+        ThermalOverlayMode.Off -> "Overlay hidden"
+        ThermalOverlayMode.Placeholder -> "Placeholder preview active"
+        ThermalOverlayMode.Live -> overlayUiState.thermal.detailText
+    }
+
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = "Display options now drive lightweight overlay visuals above the live image. Thermal and detection remain placeholder treatments only.",
+            text = "Display controls stay lightweight and layer above the live image without touching the stereo presenter path.",
             style = MaterialTheme.typography.bodyMedium,
             color = NevexTextSecondary,
         )
@@ -55,6 +74,7 @@ fun DisplayMenu(
             Box {
                 LiveViewOverlayLayer(
                     overlayUiState = overlayUiState,
+                    showThermalHud = false,
                     modifier = Modifier.fillMaxSize(),
                 )
             }
@@ -64,6 +84,7 @@ fun DisplayMenu(
             subtitle = "Minimal center reticle",
             checked = menuUiState.displaySettings.reticleEnabled,
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.Reticle,
+            iconResId = R.drawable.nevex_glyph_reticle_center,
             onToggle = onReticleToggle,
             onSelected = { onSelectIndex(MenuSelectionIndex.Display.Reticle) },
         )
@@ -72,6 +93,7 @@ fun DisplayMenu(
             subtitle = "Faint calibration grid",
             checked = menuUiState.displaySettings.gridEnabled,
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.Grid,
+            iconResId = R.drawable.nevex_glyph_stereo_align,
             onToggle = onGridToggle,
             onSelected = { onSelectIndex(MenuSelectionIndex.Display.Grid) },
         )
@@ -80,21 +102,72 @@ fun DisplayMenu(
             subtitle = "Restrained placeholder detection boxes",
             checked = menuUiState.displaySettings.boundingBoxesEnabled,
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.BoundingBoxes,
+            iconResId = R.drawable.nevex_glyph_target_box,
             onToggle = onBoundingBoxesToggle,
             onSelected = { onSelectIndex(MenuSelectionIndex.Display.BoundingBoxes) },
         )
-        ToggleItem(
-            title = "Thermal Overlay",
-            subtitle = "Subtle warm-tint placeholder treatment",
-            checked = menuUiState.displaySettings.thermalOverlayEnabled,
+        MenuButton(
+            title = "Thermal Mode: ${thermalMode.label}",
+            subtitle = thermalSubtitle,
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.ThermalOverlay,
-            onToggle = onThermalOverlayToggle,
-            onSelected = { onSelectIndex(MenuSelectionIndex.Display.ThermalOverlay) },
+            iconResId = R.drawable.nevex_glyph_fusion,
+            onClick = {
+                onSelectIndex(MenuSelectionIndex.Display.ThermalOverlay)
+                onCycleThermalMode()
+            },
+        )
+        MenuButton(
+            title = "Thermal Presentation",
+            subtitle = "Current mode: ${menuUiState.displaySettings.thermalVisualMode.label}",
+            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.ThermalPresentation,
+            iconResId = R.drawable.nevex_glyph_thermal,
+            onClick = {
+                onSelectIndex(MenuSelectionIndex.Display.ThermalPresentation)
+                onOpenThermalPresentation()
+            },
+        )
+        ToggleItem(
+            title = "Thermal Preview Mode",
+            subtitle = if (thermalPreviewModeEnabled) {
+                "Temporary live thermal overlay forced on both eyes at ${thermalPreviewOpacityPreset.label} opacity"
+            } else {
+                "Quick stereo + thermal evaluation mode for the emulator or PC display"
+            },
+            checked = thermalPreviewModeEnabled,
+            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.ThermalPreview,
+            iconResId = R.drawable.nevex_glyph_playback,
+            onToggle = onThermalPreviewModeToggle,
+            onSelected = { onSelectIndex(MenuSelectionIndex.Display.ThermalPreview) },
+        )
+        MenuButton(
+            title = "Preview Opacity: ${thermalPreviewOpacityPreset.label}",
+            subtitle = if (thermalPreviewModeEnabled) {
+                "Cycles 10 / 25 / 40 for the active preview overlay blend."
+            } else {
+                "Preset for the next preview session. Default is 25%."
+            },
+            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.ThermalPreviewOpacity,
+            iconResId = R.drawable.nevex_glyph_gain,
+            onClick = {
+                onSelectIndex(MenuSelectionIndex.Display.ThermalPreviewOpacity)
+                onCycleThermalPreviewOpacityPreset()
+            },
+        )
+        MenuButton(
+            title = "Thermal Alignment",
+            subtitle = "Adjust X, Y, scale, precision mode, and quick alignment presets.",
+            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.ThermalAlignment,
+            iconResId = R.drawable.nevex_glyph_thermal_align,
+            onClick = {
+                onSelectIndex(MenuSelectionIndex.Display.ThermalAlignment)
+                onOpenThermalAlignment()
+            },
         )
         MenuButton(
             title = "Return to Settings",
-            subtitle = "Back to the slider and audio placeholder controls.",
+            subtitle = "Back to startup behavior, sound level, and defaults.",
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Display.ReturnSettings,
+            iconResId = R.drawable.nevex_glyph_back,
             onClick = onReturnSettings,
         )
     }

@@ -9,7 +9,7 @@ function Get-NevexPackageName {
 }
 
 function Get-NevexMainActivity {
-    return "com.nevex.xr.nativeapp/.MainActivity"
+    return "com.nevex.xr.nativeapp/.SplashActivity"
 }
 
 function Get-NevexAndroidStudioInstallRoot {

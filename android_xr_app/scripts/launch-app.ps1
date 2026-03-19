@@ -4,7 +4,8 @@ param(
     [switch]$StopFirst,
     [switch]$AutoConnect,
     [string]$JetsonHost,
-    [string]$PresenterMode
+    [string]$PresenterMode,
+    [switch]$PreviewBootMode
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -31,6 +32,9 @@ if ($JetsonHost) {
 if ($PresenterMode) {
     $startArgs += @("--es", "nevex.presenter_mode", $PresenterMode)
 }
+if ($PreviewBootMode) {
+    $startArgs += @("--ez", "nevex.preview_boot_mode", "true")
+}
 
 & $script:NevexAdb @adbArgs @startArgs
 if ($LASTEXITCODE -ne 0) {
@@ -39,7 +43,7 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ""
 Write-Host "Launched $mainActivity on device $resolvedSerial"
-if ($AutoConnect -or $JetsonHost -or $PresenterMode) {
+if ($AutoConnect -or $JetsonHost -or $PresenterMode -or $PreviewBootMode) {
     $launchSummary = @()
     if ($AutoConnect) {
         $launchSummary += "auto-connect"
@@ -49,6 +53,9 @@ if ($AutoConnect -or $JetsonHost -or $PresenterMode) {
     }
     if ($PresenterMode) {
         $launchSummary += "mode=$PresenterMode"
+    }
+    if ($PreviewBootMode) {
+        $launchSummary += "preview-boot"
     }
     Write-Host ("Launch extras: " + ($launchSummary -join ", "))
 }

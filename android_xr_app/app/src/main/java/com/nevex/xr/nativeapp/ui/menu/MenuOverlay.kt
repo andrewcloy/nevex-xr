@@ -13,10 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nevex.xr.nativeapp.ui.state.CaptureShellUiState
+import com.nevex.xr.nativeapp.ui.state.MissionProfile
 import com.nevex.xr.nativeapp.ui.state.NevexMenuScreen
 import com.nevex.xr.nativeapp.ui.state.NevexMenuUiState
 import com.nevex.xr.nativeapp.ui.state.OverlayUiState
-import com.nevex.xr.nativeapp.ui.theme.NevexAccent
+import com.nevex.xr.nativeapp.ui.state.ThermalVisualMode
+import com.nevex.xr.nativeapp.ui.state.ViewingMode
 import com.nevex.xr.nativeapp.ui.theme.NevexBorder
 import com.nevex.xr.nativeapp.ui.theme.NevexPanelStrong
 import com.nevex.xr.nativeapp.ui.theme.NevexTextPrimary
@@ -25,23 +28,45 @@ import com.nevex.xr.nativeapp.ui.theme.NevexTextSecondary
 @Composable
 fun MenuOverlayPanel(
     menuUiState: NevexMenuUiState,
+    captureUiState: CaptureShellUiState,
     overlayUiState: OverlayUiState,
     onSelectIndex: (Int) -> Unit,
-    onStartResume: () -> Unit,
-    onToggleMode: () -> Unit,
+    onCycleViewingMode: () -> Unit,
+    onSetViewingMode: (ViewingMode) -> Unit,
+    onOpenMissionProfiles: () -> Unit,
+    onOpenCapture: () -> Unit,
+    onCaptureSnapshot: () -> Unit,
+    onToggleRecording: () -> Unit,
+    onCloseMenu: () -> Unit,
+    onSetMissionProfile: (MissionProfile) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenDisplaySettings: () -> Unit,
+    onOpenThermalPresentation: () -> Unit,
+    onOpenThermalAlignment: () -> Unit,
+    onOpenThermalAutoCalibration: () -> Unit,
     onOpenSystemStatus: () -> Unit,
     onReturnMain: () -> Unit,
     onReturnSettings: () -> Unit,
-    onBrightnessChange: (Float) -> Unit,
-    onContrastChange: (Float) -> Unit,
+    onReturnDisplay: () -> Unit,
+    onReturnThermalAlignment: () -> Unit,
     onOverlayOpacityChange: (Float) -> Unit,
     onSoundVolumeChange: (Float) -> Unit,
+    onAutoConnectToggle: (Boolean) -> Unit,
+    onRestoreDefaults: () -> Unit,
     onReticleToggle: (Boolean) -> Unit,
     onGridToggle: (Boolean) -> Unit,
     onBoundingBoxesToggle: (Boolean) -> Unit,
-    onThermalOverlayToggle: (Boolean) -> Unit,
+    onCycleThermalMode: () -> Unit,
+    onThermalPreviewModeToggle: (Boolean) -> Unit,
+    onCycleThermalPreviewOpacityPreset: () -> Unit,
+    onSetThermalVisualMode: (ThermalVisualMode) -> Unit,
+    onSelectPreparedThermalMode: (Int) -> Unit,
+    onCycleThermalAlignmentAdjustmentMode: () -> Unit,
+    onThermalOffsetXChange: (Float) -> Unit,
+    onThermalOffsetYChange: (Float) -> Unit,
+    onThermalScaleChange: (Float) -> Unit,
+    onCenterThermalAlignment: () -> Unit,
+    onResetThermalAlignment: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val panelAlpha = (0.30f + (menuUiState.settings.overlayOpacity * 0.62f)).coerceIn(0.38f, 0.92f)
@@ -70,20 +95,39 @@ fun MenuOverlayPanel(
                 style = MaterialTheme.typography.bodyMedium,
                 color = NevexTextSecondary,
             )
-            Text(
-                text = "Keyboard fallback active: M, arrows, Enter, Backspace",
-                style = MaterialTheme.typography.bodySmall,
-                color = NevexAccent,
-            )
             when (menuUiState.currentMenu) {
                 NevexMenuScreen.MainMenu -> {
                     MainMenu(
                         menuUiState = menuUiState,
+                        captureUiState = captureUiState,
                         onSelectIndex = onSelectIndex,
-                        onStartResume = onStartResume,
-                        onToggleMode = onToggleMode,
+                        onCycleViewingMode = onCycleViewingMode,
+                        onSetViewingMode = onSetViewingMode,
+                        onOpenMissionProfiles = onOpenMissionProfiles,
+                        onOpenCapture = onOpenCapture,
                         onOpenSettings = onOpenSettings,
                         onOpenSystemStatus = onOpenSystemStatus,
+                        onCloseMenu = onCloseMenu,
+                    )
+                }
+
+                NevexMenuScreen.MissionProfiles -> {
+                    MissionProfilesMenu(
+                        menuUiState = menuUiState,
+                        onSelectIndex = onSelectIndex,
+                        onSetMissionProfile = onSetMissionProfile,
+                        onReturnMain = onReturnMain,
+                    )
+                }
+
+                NevexMenuScreen.Capture -> {
+                    CaptureMenu(
+                        menuUiState = menuUiState,
+                        captureUiState = captureUiState,
+                        onSelectIndex = onSelectIndex,
+                        onCaptureSnapshot = onCaptureSnapshot,
+                        onToggleRecording = onToggleRecording,
+                        onReturnMain = onReturnMain,
                     )
                 }
 
@@ -91,11 +135,12 @@ fun MenuOverlayPanel(
                     SettingsMenu(
                         menuUiState = menuUiState,
                         onSelectIndex = onSelectIndex,
-                        onBrightnessChange = onBrightnessChange,
-                        onContrastChange = onContrastChange,
                         onOverlayOpacityChange = onOverlayOpacityChange,
                         onSoundVolumeChange = onSoundVolumeChange,
+                        onAutoConnectToggle = onAutoConnectToggle,
                         onOpenDisplaySettings = onOpenDisplaySettings,
+                        onOpenSystemStatus = onOpenSystemStatus,
+                        onRestoreDefaults = onRestoreDefaults,
                         onReturnMain = onReturnMain,
                     )
                 }
@@ -108,8 +153,47 @@ fun MenuOverlayPanel(
                         onReticleToggle = onReticleToggle,
                         onGridToggle = onGridToggle,
                         onBoundingBoxesToggle = onBoundingBoxesToggle,
-                        onThermalOverlayToggle = onThermalOverlayToggle,
+                        onCycleThermalMode = onCycleThermalMode,
+                        onOpenThermalPresentation = onOpenThermalPresentation,
+                        onThermalPreviewModeToggle = onThermalPreviewModeToggle,
+                        onCycleThermalPreviewOpacityPreset = onCycleThermalPreviewOpacityPreset,
+                        onOpenThermalAlignment = onOpenThermalAlignment,
                         onReturnSettings = onReturnSettings,
+                    )
+                }
+
+                NevexMenuScreen.ThermalPresentation -> {
+                    ThermalPresentationMenu(
+                        menuUiState = menuUiState,
+                        onSelectIndex = onSelectIndex,
+                        onSetThermalVisualMode = onSetThermalVisualMode,
+                        onSelectPreparedMode = onSelectPreparedThermalMode,
+                        onReturnDisplay = onReturnDisplay,
+                    )
+                }
+
+                NevexMenuScreen.ThermalAlignment -> {
+                    ThermalAlignmentMenu(
+                        menuUiState = menuUiState,
+                        overlayUiState = overlayUiState,
+                        onSelectIndex = onSelectIndex,
+                        onOpenAutoCalibration = onOpenThermalAutoCalibration,
+                        onToggleAdjustmentMode = onCycleThermalAlignmentAdjustmentMode,
+                        onOffsetXChange = onThermalOffsetXChange,
+                        onOffsetYChange = onThermalOffsetYChange,
+                        onScaleChange = onThermalScaleChange,
+                        onOverlayOpacityChange = onOverlayOpacityChange,
+                        onCenterAlignment = onCenterThermalAlignment,
+                        onResetAlignment = onResetThermalAlignment,
+                        onReturnDisplay = onReturnDisplay,
+                    )
+                }
+
+                NevexMenuScreen.ThermalAutoCalibration -> {
+                    ThermalAutoCalibrationMenu(
+                        menuUiState = menuUiState,
+                        overlayUiState = overlayUiState,
+                        onReturnAlignment = onReturnThermalAlignment,
                     )
                 }
 
@@ -126,9 +210,14 @@ fun MenuOverlayPanel(
 
 private fun menuSubtitle(screen: NevexMenuScreen): String {
     return when (screen) {
-        NevexMenuScreen.MainMenu -> "Quick live-view controls that stay out of the central stereo image."
-        NevexMenuScreen.Settings -> "Placeholder UI controls stored in ViewModel state."
-        NevexMenuScreen.DisplaySettings -> "XR overlay toggles prepared for later rendering features."
-        NevexMenuScreen.SystemStatus -> "Current connection and pipeline metrics from the existing app state."
+        NevexMenuScreen.MainMenu -> "Primary live-view controls with a shorter operator path."
+        NevexMenuScreen.MissionProfiles -> "Selectable operating profiles that shape current shell behavior."
+        NevexMenuScreen.Capture -> "Snapshot and recording controls that preserve the live feed."
+        NevexMenuScreen.Settings -> "Startup behavior, shell visibility, sound level, and reset controls."
+        NevexMenuScreen.DisplaySettings -> "XR overlays, thermal presentation, preview mode, and alignment."
+        NevexMenuScreen.ThermalPresentation -> "Only live-ready thermal styles are active; future filters stay clearly marked."
+        NevexMenuScreen.ThermalAlignment -> "Fine thermal placement trim for alignment and optics setup."
+        NevexMenuScreen.ThermalAutoCalibration -> "Guided thermal registration with readiness guidance, calm no-solve handling, and manual-refinement handoff."
+        NevexMenuScreen.SystemStatus -> "Current connection, performance, and thermal status from the existing app state."
     }
 }

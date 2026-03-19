@@ -14,13 +14,39 @@ private const val SOUND_LOG_TAG = "NevexXrSound"
 interface SoundManager {
     fun setVolume(volume: Float)
 
+    fun playFocusShift()
+
     fun playClick()
 
     fun playBack()
 
+    fun playToggle(enabled: Boolean)
+
     fun playAlert()
 
     fun playActivate()
+
+    fun playReady()
+
+    fun playMenuOpen()
+
+    fun playMenuClose()
+
+    fun playProfileChange()
+
+    fun playSnapshotSaved()
+
+    fun playRecordingStarted()
+
+    fun playRecordingStopped()
+
+    fun playReconnect()
+
+    fun playConnectionLost()
+
+    fun playCalibrationComplete()
+
+    fun playCalibrationFail()
 
     fun release()
 }
@@ -28,13 +54,39 @@ interface SoundManager {
 object NoOpSoundManager : SoundManager {
     override fun setVolume(volume: Float) = Unit
 
+    override fun playFocusShift() = Unit
+
     override fun playClick() = Unit
 
     override fun playBack() = Unit
 
+    override fun playToggle(enabled: Boolean) = Unit
+
     override fun playAlert() = Unit
 
     override fun playActivate() = Unit
+
+    override fun playReady() = Unit
+
+    override fun playMenuOpen() = Unit
+
+    override fun playMenuClose() = Unit
+
+    override fun playProfileChange() = Unit
+
+    override fun playSnapshotSaved() = Unit
+
+    override fun playRecordingStarted() = Unit
+
+    override fun playRecordingStopped() = Unit
+
+    override fun playReconnect() = Unit
+
+    override fun playConnectionLost() = Unit
+
+    override fun playCalibrationComplete() = Unit
+
+    override fun playCalibrationFail() = Unit
 
     override fun release() = Unit
 }
@@ -50,34 +102,99 @@ fun createSoundManager(
 }
 
 private enum class UiSoundCue(
-    val assetPath: String,
     val fallbackRawResId: Int,
     val gainScale: Float,
     val minIntervalMs: Long,
 ) {
+    FocusShift(
+        fallbackRawResId = R.raw.nevex_audio_ui_focus_shift,
+        gainScale = 0.44f,
+        minIntervalMs = 70L,
+    ),
     Click(
-        assetPath = "audio/click.wav",
         fallbackRawResId = R.raw.nevex_audio_ui_click_soft,
         gainScale = 0.52f,
         minIntervalMs = 45L,
     ),
     Back(
-        assetPath = "audio/back.wav",
         fallbackRawResId = R.raw.nevex_audio_ui_back,
         gainScale = 0.66f,
         minIntervalMs = 80L,
     ),
+    ToggleOn(
+        fallbackRawResId = R.raw.nevex_audio_ui_toggle_on,
+        gainScale = 0.52f,
+        minIntervalMs = 100L,
+    ),
+    ToggleOff(
+        fallbackRawResId = R.raw.nevex_audio_ui_toggle_off,
+        gainScale = 0.48f,
+        minIntervalMs = 100L,
+    ),
     Alert(
-        assetPath = "audio/alert.wav",
         fallbackRawResId = R.raw.nevex_audio_warning_alert,
         gainScale = 0.88f,
         minIntervalMs = 250L,
     ),
     Activate(
-        assetPath = "audio/activate.wav",
         fallbackRawResId = R.raw.nevex_audio_ui_confirm,
         gainScale = 0.76f,
         minIntervalMs = 120L,
+    ),
+    Ready(
+        fallbackRawResId = R.raw.nevex_audio_readiness_ready,
+        gainScale = 0.72f,
+        minIntervalMs = 1_500L,
+    ),
+    MenuOpen(
+        fallbackRawResId = R.raw.nevex_audio_playback_open,
+        gainScale = 0.60f,
+        minIntervalMs = 120L,
+    ),
+    MenuClose(
+        fallbackRawResId = R.raw.nevex_audio_ui_dismiss,
+        gainScale = 0.56f,
+        minIntervalMs = 120L,
+    ),
+    ProfileChange(
+        fallbackRawResId = R.raw.nevex_audio_playback_select,
+        gainScale = 0.64f,
+        minIntervalMs = 180L,
+    ),
+    SnapshotSaved(
+        fallbackRawResId = R.raw.nevex_audio_capture_photo,
+        gainScale = 0.68f,
+        minIntervalMs = 160L,
+    ),
+    RecordingStarted(
+        fallbackRawResId = R.raw.nevex_audio_record_start,
+        gainScale = 0.70f,
+        minIntervalMs = 220L,
+    ),
+    RecordingStopped(
+        fallbackRawResId = R.raw.nevex_audio_record_stop,
+        gainScale = 0.66f,
+        minIntervalMs = 220L,
+    ),
+    Reconnect(
+        fallbackRawResId = R.raw.nevex_audio_reconnect,
+        gainScale = 0.58f,
+        minIntervalMs = 1_200L,
+    ),
+    ConnectionLost(
+        fallbackRawResId = R.raw.nevex_audio_disconnect,
+        gainScale = 0.62f,
+        minIntervalMs = 1_200L,
+    ),
+    CalibrationComplete(
+        fallbackRawResId = R.raw.nevex_audio_calibration_complete,
+        gainScale = 0.70f,
+        minIntervalMs = 1_200L,
+    ),
+    CalibrationFail(
+        fallbackRawResId = R.raw.nevex_audio_calibration_fail,
+        gainScale = 0.74f,
+        minIntervalMs = 1_500L,
     ),
 }
 
@@ -108,6 +225,7 @@ private class AndroidSoundManager(
         soundPool.setOnLoadCompleteListener { _, sampleId, status ->
             if (status == 0) {
                 loadedSampleIds.add(sampleId)
+                Log.i(SOUND_LOG_TAG, "UI cue sample ready: sampleId=$sampleId")
             } else {
                 Log.w(SOUND_LOG_TAG, "SoundPool failed to load sampleId=$sampleId status=$status")
             }
@@ -123,6 +241,10 @@ private class AndroidSoundManager(
         masterVolume = volume.coerceIn(0f, 1f)
     }
 
+    override fun playFocusShift() {
+        play(UiSoundCue.FocusShift)
+    }
+
     override fun playClick() {
         play(UiSoundCue.Click)
     }
@@ -131,12 +253,60 @@ private class AndroidSoundManager(
         play(UiSoundCue.Back)
     }
 
+    override fun playToggle(enabled: Boolean) {
+        play(if (enabled) UiSoundCue.ToggleOn else UiSoundCue.ToggleOff)
+    }
+
     override fun playAlert() {
         play(UiSoundCue.Alert)
     }
 
     override fun playActivate() {
         play(UiSoundCue.Activate)
+    }
+
+    override fun playReady() {
+        play(UiSoundCue.Ready)
+    }
+
+    override fun playMenuOpen() {
+        play(UiSoundCue.MenuOpen)
+    }
+
+    override fun playMenuClose() {
+        play(UiSoundCue.MenuClose)
+    }
+
+    override fun playProfileChange() {
+        play(UiSoundCue.ProfileChange)
+    }
+
+    override fun playSnapshotSaved() {
+        play(UiSoundCue.SnapshotSaved)
+    }
+
+    override fun playRecordingStarted() {
+        play(UiSoundCue.RecordingStarted)
+    }
+
+    override fun playRecordingStopped() {
+        play(UiSoundCue.RecordingStopped)
+    }
+
+    override fun playReconnect() {
+        play(UiSoundCue.Reconnect)
+    }
+
+    override fun playConnectionLost() {
+        play(UiSoundCue.ConnectionLost)
+    }
+
+    override fun playCalibrationComplete() {
+        play(UiSoundCue.CalibrationComplete)
+    }
+
+    override fun playCalibrationFail() {
+        play(UiSoundCue.CalibrationFail)
     }
 
     override fun release() {
@@ -154,9 +324,6 @@ private class AndroidSoundManager(
             return
         }
         val sampleId = sampleIds[cue] ?: return
-        if (!loadedSampleIds.contains(sampleId)) {
-            return
-        }
         val now = SystemClock.elapsedRealtime()
         val lastPlayedAt = lastPlayAtElapsedMs[cue] ?: Long.MIN_VALUE
         if (now - lastPlayedAt < cue.minIntervalMs) {
@@ -168,8 +335,7 @@ private class AndroidSoundManager(
             return
         }
 
-        lastPlayAtElapsedMs[cue] = now
-        soundPool.play(
+        val streamId = soundPool.play(
             sampleId,
             effectiveVolume,
             effectiveVolume,
@@ -177,14 +343,21 @@ private class AndroidSoundManager(
             0,
             1f,
         )
+        if (streamId == 0) {
+            Log.w(
+                SOUND_LOG_TAG,
+                "SoundPool rejected cue '${cue.name}' ready=${loadedSampleIds.contains(sampleId)} sampleId=$sampleId",
+            )
+            return
+        }
+        lastPlayAtElapsedMs[cue] = now
+        Log.i(
+            SOUND_LOG_TAG,
+            "Played UI cue '${cue.name}' streamId=$streamId ready=${loadedSampleIds.contains(sampleId)}",
+        )
     }
 
     private fun loadSample(cue: UiSoundCue): Int? {
-        loadAssetSample(cue)?.let { sampleId ->
-            Log.i(SOUND_LOG_TAG, "Loaded UI cue '${cue.name}' from assets: ${cue.assetPath}")
-            return sampleId
-        }
-
         return try {
             soundPool.load(context, cue.fallbackRawResId, 1).also { sampleId ->
                 Log.i(
@@ -195,19 +368,9 @@ private class AndroidSoundManager(
         } catch (error: RuntimeException) {
             Log.w(
                 SOUND_LOG_TAG,
-                "Unable to load UI cue '${cue.name}' from assets or raw fallback",
+                "Unable to load UI cue '${cue.name}' from raw resource",
                 error,
             )
-            null
-        }
-    }
-
-    private fun loadAssetSample(cue: UiSoundCue): Int? {
-        return try {
-            context.assets.openFd(cue.assetPath).use { assetDescriptor ->
-                soundPool.load(assetDescriptor, 1)
-            }
-        } catch (_: Exception) {
             null
         }
     }

@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nevex.xr.nativeapp.R
 import com.nevex.xr.nativeapp.ui.components.MenuButton
 import com.nevex.xr.nativeapp.ui.state.MenuSelectionIndex
 import com.nevex.xr.nativeapp.ui.state.NevexMenuUiState
@@ -40,10 +41,27 @@ fun StatusMenu(
             label = "Sensor status",
             value = menuUiState.systemStatus.sensorStatus,
         )
+        StatusLine(
+            label = "Thermal stream",
+            value = menuUiState.systemStatus.thermalStatus,
+        )
+        StatusLine(
+            label = "Thermal range",
+            value = menuUiState.systemStatus.thermalRange,
+        )
+        StatusLine(
+            label = "Thermal center",
+            value = menuUiState.systemStatus.thermalCenter,
+        )
+        StatusLine(
+            label = "Thermal capture FPS",
+            value = menuUiState.systemStatus.thermalCaptureFps,
+        )
         MenuButton(
             title = "Return to Main Menu",
             subtitle = "Back to the live view controls.",
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Status.ReturnMain,
+            iconResId = R.drawable.nevex_glyph_back,
             onClick = onReturnMain,
         )
     }

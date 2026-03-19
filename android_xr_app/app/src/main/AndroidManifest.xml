@@ -15,7 +15,11 @@
             android:name=".MainActivity"
             android:enableOnBackInvokedCallback="true"
             android:exported="true"
-            android:theme="@style/Theme.NevexXr">
+            android:theme="@style/Theme.NevexXr" />
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.NevexXr.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -8,8 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nevex.xr.nativeapp.R
 import com.nevex.xr.nativeapp.ui.components.MenuButton
 import com.nevex.xr.nativeapp.ui.components.SliderItem
+import com.nevex.xr.nativeapp.ui.components.ToggleItem
 import com.nevex.xr.nativeapp.ui.state.MenuSelectionIndex
 import com.nevex.xr.nativeapp.ui.state.NevexMenuUiState
 import com.nevex.xr.nativeapp.ui.theme.NevexTextSecondary
@@ -18,11 +20,12 @@ import com.nevex.xr.nativeapp.ui.theme.NevexTextSecondary
 fun SettingsMenu(
     menuUiState: NevexMenuUiState,
     onSelectIndex: (Int) -> Unit,
-    onBrightnessChange: (Float) -> Unit,
-    onContrastChange: (Float) -> Unit,
     onOverlayOpacityChange: (Float) -> Unit,
     onSoundVolumeChange: (Float) -> Unit,
+    onAutoConnectToggle: (Boolean) -> Unit,
     onOpenDisplaySettings: () -> Unit,
+    onOpenSystemStatus: () -> Unit,
+    onRestoreDefaults: () -> Unit,
     onReturnMain: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -31,52 +34,67 @@ fun SettingsMenu(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = "These controls only affect the XR UI shell for now. The stereo feed path remains unchanged.",
+            text = "Startup, shell visibility, and current operator controls that do not disturb the known-good live path.",
             style = MaterialTheme.typography.bodyMedium,
             color = NevexTextSecondary,
         )
-        SliderItem(
-            title = "Brightness",
-            subtitle = "UI-only placeholder control",
-            value = menuUiState.settings.brightness,
-            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.Brightness,
-            onValueChange = onBrightnessChange,
-            onSelected = { onSelectIndex(MenuSelectionIndex.Settings.Brightness) },
-        )
-        SliderItem(
-            title = "Contrast",
-            subtitle = "UI-only placeholder control",
-            value = menuUiState.settings.contrast,
-            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.Contrast,
-            onValueChange = onContrastChange,
-            onSelected = { onSelectIndex(MenuSelectionIndex.Settings.Contrast) },
+        ToggleItem(
+            title = "Auto Connect on Startup",
+            subtitle = if (menuUiState.settings.autoConnectOnStartup) {
+                "Normal launch goes directly toward live view using the last known Jetson host."
+            } else {
+                "Launch stays manual until the operator chooses to connect."
+            },
+            checked = menuUiState.settings.autoConnectOnStartup,
+            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.AutoConnect,
+            iconResId = R.drawable.nevex_glyph_jetson_link,
+            onToggle = onAutoConnectToggle,
+            onSelected = { onSelectIndex(MenuSelectionIndex.Settings.AutoConnect) },
         )
         SliderItem(
             title = "Overlay Opacity",
             subtitle = "Applies to the menu panel itself",
             value = menuUiState.settings.overlayOpacity,
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.OverlayOpacity,
+            iconResId = R.drawable.nevex_glyph_menu,
             onValueChange = onOverlayOpacityChange,
             onSelected = { onSelectIndex(MenuSelectionIndex.Settings.OverlayOpacity) },
         )
         SliderItem(
             title = "Sound Volume",
-            subtitle = "Future audio hook only",
+            subtitle = "Scales subtle UI, capture, and link cues already wired in the shell.",
             value = menuUiState.settings.soundVolume,
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.SoundVolume,
+            iconResId = R.drawable.nevex_glyph_waypoint,
             onValueChange = onSoundVolumeChange,
             onSelected = { onSelectIndex(MenuSelectionIndex.Settings.SoundVolume) },
         )
         MenuButton(
-            title = "Display Settings",
-            subtitle = "Reticle, grid, bounding boxes, and thermal overlay placeholders.",
+            title = "Display & Thermal",
+            subtitle = "Reticle, grid, thermal presentation, preview mode, and alignment controls.",
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.DisplaySettings,
+            iconResId = R.drawable.nevex_glyph_quick_settings,
             onClick = onOpenDisplaySettings,
         )
         MenuButton(
+            title = "System Status",
+            subtitle = "Connection, latency, thermal link state, and diagnostics summary.",
+            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.SystemStatus,
+            iconResId = R.drawable.nevex_glyph_diagnostics,
+            onClick = onOpenSystemStatus,
+        )
+        MenuButton(
+            title = "Restore Product Defaults",
+            subtitle = "Return startup behavior, sound level, profile, and shell controls to the default operator baseline.",
+            selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.RestoreDefaults,
+            iconResId = R.drawable.nevex_glyph_reset,
+            onClick = onRestoreDefaults,
+        )
+        MenuButton(
             title = "Return to Main Menu",
-            subtitle = "Back to the root overlay menu.",
+            subtitle = "Back to viewing mode, mission profiles, and capture.",
             selected = menuUiState.selectedItemIndex == MenuSelectionIndex.Settings.ReturnMain,
+            iconResId = R.drawable.nevex_glyph_back,
             onClick = onReturnMain,
         )
     }
