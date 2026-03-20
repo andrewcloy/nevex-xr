@@ -19,6 +19,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.nevex.xr.nativeapp.ui.NevexXrApp
 import com.nevex.xr.nativeapp.ui.NevexXrViewModel
+import com.nevex.xr.nativeapp.ui.state.MissionProfile
+import com.nevex.xr.nativeapp.ui.state.ThermalVisualMode
 import com.nevex.xr.nativeapp.ui.state.ViewingMode
 
 const val EXTRA_AUTO_CONNECT = "nevex.auto_connect"
@@ -48,6 +50,12 @@ class MainActivity : ComponentActivity() {
                 "visible" -> viewModel.setPrimaryViewingMode(ViewingMode.Visible)
                 "thermal_overlay" -> viewModel.setPrimaryViewingMode(ViewingMode.ThermalOverlay)
                 "thermal_only" -> viewModel.setPrimaryViewingMode(ViewingMode.ThermalOnly)
+                "profile_inspection" -> viewModel.setMissionProfile(MissionProfile.Inspection)
+                "profile_rescue" -> viewModel.setMissionProfile(MissionProfile.Rescue)
+                "profile_tactical" -> viewModel.setMissionProfile(MissionProfile.Tactical)
+                "profile_marine" -> viewModel.setMissionProfile(MissionProfile.Marine)
+                "white_hot" -> viewModel.setThermalVisualMode(ThermalVisualMode.WhiteHot)
+                "black_hot" -> viewModel.setThermalVisualMode(ThermalVisualMode.BlackHot)
                 "capture_snapshot" -> viewModel.captureSnapshot()
                 "start_recording" -> viewModel.startRecording()
                 "stop_recording" -> viewModel.stopRecording()

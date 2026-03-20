@@ -98,6 +98,7 @@ import com.nevex.xr.nativeapp.ui.overlay.LiveViewOverlayLayer
 import com.nevex.xr.nativeapp.ui.state.CaptureFeedbackTone
 import com.nevex.xr.nativeapp.ui.state.CaptureFeedbackUiState
 import com.nevex.xr.nativeapp.ui.state.CaptureShellUiState
+import com.nevex.xr.nativeapp.ui.state.MissionProfile
 import com.nevex.xr.nativeapp.ui.state.NevexMenuScreen
 import com.nevex.xr.nativeapp.ui.state.NevexMenuUiState
 import com.nevex.xr.nativeapp.ui.state.OverlayUiState
@@ -113,6 +114,7 @@ import com.nevex.xr.nativeapp.ui.theme.NevexSuccess
 import com.nevex.xr.nativeapp.ui.theme.NevexTextPrimary
 import com.nevex.xr.nativeapp.ui.theme.NevexTextSecondary
 import com.nevex.xr.nativeapp.ui.theme.NevexTheme
+import java.util.Locale
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -388,6 +390,7 @@ fun NevexXrApp(
             }
             SharedTopStatusPill(
                 uiState = uiState,
+                menuUiState = menuUiState,
                 captureUiState = captureShellUiState,
                 overlayUiState = overlayUiState,
                 frameUiState = viewModel.frameUiState,
@@ -1189,6 +1192,7 @@ private fun DiagnosticsLine(
 @Composable
 private fun SharedTopStatusPill(
     uiState: NevexXrUiState,
+    menuUiState: NevexMenuUiState,
     captureUiState: CaptureShellUiState,
     overlayUiState: OverlayUiState,
     frameUiState: StateFlow<NevexFrameUiState>,
@@ -1274,7 +1278,10 @@ private fun SharedTopStatusPill(
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
-            LiveModeIndicatorPill(overlayUiState = overlayUiState)
+            LiveModeIndicatorPill(
+                overlayUiState = overlayUiState,
+                menuUiState = menuUiState,
+            )
         }
 
         AnimatedVisibility(
@@ -1508,6 +1515,7 @@ private fun RecordingIndicatorBadge(
 @Composable
 private fun LiveModeIndicatorPill(
     overlayUiState: OverlayUiState,
+    menuUiState: NevexMenuUiState,
     modifier: Modifier = Modifier,
 ) {
     val borderColor = if (overlayUiState.thermalMode == ThermalOverlayMode.Off) {
@@ -1522,15 +1530,28 @@ private fun LiveModeIndicatorPill(
         border = BorderStroke(1.dp, borderColor),
         shape = CircleShape,
     ) {
-        Text(
-            text = overlayUiState.liveModeIndicatorText(),
+        Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.labelLarge,
-            color = NevexTextPrimary,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = overlayUiState.liveModeIndicatorText(),
+                style = MaterialTheme.typography.labelLarge,
+                color = NevexTextPrimary,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = menuUiState.liveValidationIndicatorText(),
+                style = MaterialTheme.typography.labelSmall,
+                color = NevexTextSecondary,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 
@@ -1543,6 +1564,21 @@ private fun OverlayUiState.liveModeIndicatorText(): String {
             "THERMAL ${thermalPreviewVisiblePercent}%"
         }
         else -> "VISIBLE"
+    }
+}
+
+private fun NevexMenuUiState.liveValidationIndicatorText(): String {
+    val profileLabel = missionProfile.validationIndicatorLabel()
+    val thermalLabel = displaySettings.thermalVisualMode.label.uppercase(Locale.US)
+    return "$profileLabel • $thermalLabel"
+}
+
+private fun MissionProfile.validationIndicatorLabel(): String {
+    return when (this) {
+        MissionProfile.Inspection -> "INSPECTION"
+        MissionProfile.Rescue -> "RESCUE"
+        MissionProfile.Tactical -> "TACTICAL / POLICE"
+        MissionProfile.Marine -> "MARINE"
     }
 }
 
