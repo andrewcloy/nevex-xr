@@ -97,6 +97,7 @@ private const val CALIBRATION_SCALE_MIN_ACCEPT = 0.75f
 private const val CALIBRATION_SCALE_MAX_ACCEPT = 1.25f
 private const val CALIBRATION_OFFSET_MAX_ACCEPT_FRACTION = 0.25f
 private const val CAPTURE_FEEDBACK_DURATION_MS = 1_500L
+private const val CAPTURE_CONFIRMATION_DURATION_MS = 3_000L
 
 private enum class AutoCalibrationSessionSource {
     None,
@@ -868,6 +869,7 @@ class NevexXrViewModel : ViewModel() {
                 showCaptureFeedback(
                     message = "SNAPSHOT SAVED",
                     tone = CaptureFeedbackTone.Success,
+                    durationMs = CAPTURE_CONFIRMATION_DURATION_MS,
                 )
                 Log.i("NevexXrUi", "Snapshot saved: ${result.file.absolutePath}")
             }.onFailure { error ->
@@ -903,6 +905,7 @@ class NevexXrViewModel : ViewModel() {
         showCaptureFeedback(
             message = "RECORDING STARTED",
             tone = CaptureFeedbackTone.Recording,
+            durationMs = CAPTURE_CONFIRMATION_DURATION_MS,
         )
         Log.i("NevexXrUi", "Recording shell started")
     }
@@ -921,6 +924,7 @@ class NevexXrViewModel : ViewModel() {
         showCaptureFeedback(
             message = "RECORDING STOPPED",
             tone = CaptureFeedbackTone.Neutral,
+            durationMs = CAPTURE_CONFIRMATION_DURATION_MS,
         )
         Log.i("NevexXrUi", "Recording shell stopped")
     }
@@ -1885,6 +1889,7 @@ class NevexXrViewModel : ViewModel() {
     private fun showCaptureFeedback(
         message: String,
         tone: CaptureFeedbackTone,
+        durationMs: Long = CAPTURE_FEEDBACK_DURATION_MS,
     ) {
         captureFeedbackJob?.cancel()
         captureFeedbackState.value = CaptureFeedbackUiState(
@@ -1892,7 +1897,7 @@ class NevexXrViewModel : ViewModel() {
             tone = tone,
         )
         captureFeedbackJob = viewModelScope.launch {
-            delay(CAPTURE_FEEDBACK_DURATION_MS)
+            delay(durationMs)
             captureFeedbackState.value = null
         }
     }

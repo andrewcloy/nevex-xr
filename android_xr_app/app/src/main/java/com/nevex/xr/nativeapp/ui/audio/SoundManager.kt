@@ -222,6 +222,7 @@ private class AndroidSoundManager(
     private var released = false
 
     init {
+        Log.i(SOUND_LOG_TAG, "Sound manager initialized masterVolume=$masterVolume")
         soundPool.setOnLoadCompleteListener { _, sampleId, status ->
             if (status == 0) {
                 loadedSampleIds.add(sampleId)
@@ -239,6 +240,7 @@ private class AndroidSoundManager(
 
     override fun setVolume(volume: Float) {
         masterVolume = volume.coerceIn(0f, 1f)
+        Log.i(SOUND_LOG_TAG, "Updated UI cue master volume=$masterVolume")
     }
 
     override fun playFocusShift() {
@@ -321,20 +323,36 @@ private class AndroidSoundManager(
 
     private fun play(cue: UiSoundCue) {
         if (released) {
+            Log.w(SOUND_LOG_TAG, "Skipped UI cue '${cue.name}' because the sound manager is released")
             return
         }
-        val sampleId = sampleIds[cue] ?: return
+        val sampleId = sampleIds[cue] ?: run {
+            Log.w(SOUND_LOG_TAG, "Skipped UI cue '${cue.name}' because no sample was loaded")
+            return
+        }
         val now = SystemClock.elapsedRealtime()
-        val lastPlayedAt = lastPlayAtElapsedMs[cue] ?: Long.MIN_VALUE
-        if (now - lastPlayedAt < cue.minIntervalMs) {
+        val lastPlayedAt = lastPlayAtElapsedMs[cue]
+        if (lastPlayedAt != null && now - lastPlayedAt < cue.minIntervalMs) {
+            Log.i(
+                SOUND_LOG_TAG,
+                "Skipped UI cue '${cue.name}' due to throttle window ${cue.minIntervalMs}ms",
+            )
             return
         }
 
         val effectiveVolume = (masterVolume * cue.gainScale).coerceIn(0f, 1f)
         if (effectiveVolume <= 0.01f) {
+            Log.i(
+                SOUND_LOG_TAG,
+                "Skipped UI cue '${cue.name}' because effectiveVolume=$effectiveVolume masterVolume=$masterVolume",
+            )
             return
         }
 
+        Log.i(
+            SOUND_LOG_TAG,
+            "Requesting UI cue '${cue.name}' sampleId=$sampleId volume=$effectiveVolume ready=${loadedSampleIds.contains(sampleId)}",
+        )
         val streamId = soundPool.play(
             sampleId,
             effectiveVolume,

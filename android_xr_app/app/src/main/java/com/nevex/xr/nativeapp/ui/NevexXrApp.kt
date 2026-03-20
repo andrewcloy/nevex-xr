@@ -315,6 +315,7 @@ fun NevexXrApp(
                     StereoLiveSpace(
                         uiState = uiState,
                         menuUiState = menuUiState,
+                        captureUiState = captureShellUiState,
                         overlayUiState = overlayUiState,
                         frameUiState = viewModel.frameUiState,
                         leftEyeUiState = viewModel.leftEyeUiState,
@@ -722,6 +723,7 @@ private fun ConnectScreen(
 private fun StereoLiveSpace(
     uiState: NevexXrUiState,
     menuUiState: NevexMenuUiState,
+    captureUiState: CaptureShellUiState,
     overlayUiState: OverlayUiState,
     frameUiState: StateFlow<NevexFrameUiState>,
     leftEyeUiState: StateFlow<NevexEyeBitmapUiState>,
@@ -846,9 +848,38 @@ private fun StereoLiveSpace(
                             menuOverlayContent(Modifier.fillMaxWidth())
                         }
                     }
+                    LiveCaptureFeedbackOverlay(
+                        captureUiState = captureUiState,
+                        modifier = Modifier
+                            .matchParentSize()
+                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LiveCaptureFeedbackOverlay(
+    captureUiState: CaptureShellUiState,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier) {
+        AnimatedVisibility(
+            visible = captureUiState.feedback != null,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.TopCenter),
+        ) {
+            captureUiState.feedback?.let { feedback ->
+                CaptureFeedbackPill(feedback = feedback)
+            }
+        }
+        RecordingIndicatorBadge(
+            captureUiState = captureUiState,
+            modifier = Modifier.align(Alignment.TopEnd),
+        )
     }
 }
 
