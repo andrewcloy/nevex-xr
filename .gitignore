@@ -53,4 +53,12 @@ env/
 .env.*
 *.local
 
+# Local XR validation artifacts
+/03_ASSETS/
+/android_xr_app/*logcat*.txt
+/android_xr_app/*dump*.xml
+/android_xr_app/live_validation_*.png
+/android_xr_app/nevex_*.png
+/android_xr_app/xr_*.png
+
 /worktrees/
